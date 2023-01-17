@@ -39,6 +39,7 @@ def download_dataset():
     Download the dataset from the GitHub repository and extract it.
     """
     # Download dataset
+    os.makedirs(downloaded_path, exist_ok=True)
     print("#"*5 + " Downloading dataset " + "#"*5)
     for key in protocols.keys():
         # Download face photos
@@ -105,6 +106,7 @@ def extract_dataset():
     Extract downloaded files.
     """
     # Extract dataset
+    os.makedirs(extracted_path, exist_ok=True)
     print("#"*5 + " Extracting dataset " + "#"*5)
     for key in protocols.keys():
         # Extract face photos

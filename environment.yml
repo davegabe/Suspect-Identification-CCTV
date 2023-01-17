@@ -1,0 +1,14 @@
+name: si-cctv
+channels:
+  - conda-forge
+  - cogsci
+  - defaults
+dependencies:
+  - python=3.10.8
+  - pip=22.3.1
+  - numpy=1.23.5
+  - matplotlib=3.6.2
+  - seaborn=0.12.1
+  - tqdm=4.64.1
+  - pip:
+    - tensorflow==2.10.0

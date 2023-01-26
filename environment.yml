@@ -10,5 +10,7 @@ dependencies:
   - matplotlib=3.6.2
   - seaborn=0.12.1
   - tqdm=4.64.1
+  - cudatoolkit=11.2
+  - cudnn=8.1.0
   - pip:
-    - tensorflow==2.10.0
+    - tensorflow-gpu==2.10.0

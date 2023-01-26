@@ -11,7 +11,12 @@ In total, the dataset consists of 48 video sequences and 64,204 face images. In 
 To run the project, you need to install the conda environment from the `environment.yml` file.
 
 ```bash
+# Create the conda environment
 conda env create -f environment.yml
+# Activate the conda environment
+conda active si-cctv
+# Add the conda environment to the LD_LIBRARY_PATH
+conda env config vars set LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CONDA_PREFIX/lib/
 ```
 
 To download the dataset, you need to run the `dataset.py` script. This process will take a while. It will download the dataset, save all the archives in the `downloaded` folder and then extract everything in the `data` folder.

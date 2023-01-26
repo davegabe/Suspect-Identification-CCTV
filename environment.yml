@@ -12,5 +12,6 @@ dependencies:
   - tqdm=4.64.1
   - cudatoolkit=11.2
   - cudnn=8.1.0
+  - ipykernel=6.19.2
   - pip:
     - tensorflow-gpu==2.10.0

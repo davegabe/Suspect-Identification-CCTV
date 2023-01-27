@@ -49,8 +49,8 @@ def load_embeddings(batch_size=32):
     people = np.array(list(people))
     # Get half the batch size
     half_batch_size = batch_size // 2
-    # List of tuples of embeddings
-    tuple_people: list[tuple[np.ndarray, np.ndarray]] = []
+    # List of tuples concatenated embeddings of two people
+    tuple_people: list[np.ndarray] = []
     ground_truth: list[int] = [] # 0 = not the same person, 1 = same person
     
     # We add random embeddings from the selected people (so we have half the batch size embeddings from different people)
@@ -66,17 +66,18 @@ def load_embeddings(batch_size=32):
             embeddings2: np.ndarray = load_npy(os.path.join(pathEmbeddings, selected_person2))
             if len(embeddings1) == 0:
                 continue
-            tuple_people.append((embeddings1, embeddings2))
+            tuple_people.append(np.concatenate((embeddings1, embeddings2)))
             ground_truth.append(0)
 
     # We add random embeddings from the same person (so we have half the batch size embeddings from the same person)
     while len(tuple_people) < batch_size:
         selected_person: str = np.random.choice(people)
-        embeddings: np.ndarray = load_npy(os.path.join(pathEmbeddings, selected_person))
-        if len(embeddings) > 1:
+        embeddings1: np.ndarray = load_npy(os.path.join(pathEmbeddings, selected_person))
+        if len(embeddings1) > 1:
             # Once we have selected two different people, we load their embeddings and pick one random embedding from each
-            tuple_people.append((embeddings1, embeddings2))
+            embeddings2: np.ndarray = load_npy(os.path.join(pathEmbeddings, selected_person))
             # TODO: Check if the new tuple have the same embeddings in the first and second position
+            tuple_people.append(np.concatenate((embeddings1, embeddings2)))
             ground_truth.append(1)
 
     # Return numpy arrays

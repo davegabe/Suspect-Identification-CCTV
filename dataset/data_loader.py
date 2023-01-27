@@ -1,8 +1,8 @@
 import tensorflow as tf
-from extract_features import load_embeddings
+from dataset.extract_features import load_embeddings
 
 class CustomDataLoader(tf.keras.utils.Sequence):
-    def __init__(self, batch_size, input_size=512):
+    def __init__(self, batch_size, input_size=1024):
         self.batch_size = batch_size
         self.input_size = input_size
         self.shuffle = False

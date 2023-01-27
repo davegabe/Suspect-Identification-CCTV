@@ -2,3 +2,5 @@ data/
 downloaded/
 LFW/
 facenet/
+
+embeddings/

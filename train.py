@@ -1,17 +1,17 @@
-from extract_features import load_embeddings
-# from models.siamese_facenet import SiameseFacenet
 from models.siamese_classifier import SiameseClassifier
 import tensorflow as tf
+from dataset.data_loader import CustomDataLoader
 
 def main():
     # Load the model
     model = SiameseClassifier()
     model = model.model()
     model.compile(optimizer="adam", loss="binary_crossentropy", metrics=["accuracy"])
-    # Load the data
-    x, y = load_embeddings(32)
+    # Data loader
+    batch_size = 32
+    data_loader = CustomDataLoader(batch_size=batch_size)
     # Train
-    model.fit(x=x, y=y, epochs=10, batch_size=32)
+    model.fit(data_loader, epochs=10, batch_size=batch_size)
 
 if __name__ == "__main__":
     main()

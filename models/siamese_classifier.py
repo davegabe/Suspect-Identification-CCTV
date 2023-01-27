@@ -1,6 +1,8 @@
 import tensorflow as tf
 from tqdm import tqdm
 
+from extract_features import load_embeddings
+
 class SiameseClassifier(tf.keras.Model):
     def __init__(self, input_shape=(2, 512)):
         super().__init__()

@@ -4,3 +4,6 @@ LFW/
 facenet/
 
 embeddings/
+
+*.cpython*
+*.pyc

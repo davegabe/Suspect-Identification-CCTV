@@ -28,38 +28,61 @@ def extract_features():
         # Save the embeddings
         np.save(os.path.join(pathEmbeddings, person + '.npy'), embeddings)
 
+def load_npy(path: str) -> np.ndarray:
+    """
+    Loads a numpy array from a path.
+    """
+    # Load the numpy array
+    array = np.load(path, allow_pickle=True)[0]
+    # Get random embedding
+    data: dict = array[np.random.randint(0, len(array))]
+    # Return embedding
+    embedding = data["embedding"]
+    return embedding
 
-def load_embeddings_two_people():
+def load_embeddings(batch_size=32):
     """
     Loads two people embeddings and returns them.
     """
     # Get all people
     people = filter(lambda x: x.endswith('.npy'), os.listdir(pathEmbeddings))
-    person1 = np.random.choice(people)
-    while True:
-        person2 = np.random.choice(people)
-        if person1 != person2:
-            break
-    # Load the embeddings
-    embeddings1 = np.load(os.path.join(pathEmbeddings, person1))
-    embeddings2 = np.load(os.path.join(pathEmbeddings, person2))
-    # Return random embeddings from the two people
-    return np.random.choice(embeddings1), np.random.choice(embeddings2), 0
+    people = np.array(list(people))
+    # Get half the batch size
+    half_batch_size = batch_size // 2
+    # List of tuples of embeddings
+    tuple_people: list[tuple[np.ndarray, np.ndarray]] = []
+    ground_truth: list[int] = [] # 0 = not the same person, 1 = same person
+    
+    # We add random embeddings from the selected people (so we have half the batch size embeddings from different people)
+    while len(tuple_people) < half_batch_size:
+        selected_person1: str = np.random.choice(people)
+        selected_person2: str = np.random.choice(people)
+        # TODO: Check if the tuple people already contains the selected people
+        if selected_person1 != selected_person2:
+            # Once we have selected two different people, we load their embeddings and pick one random embedding from each
+            embeddings1: np.ndarray = load_npy(os.path.join(pathEmbeddings, selected_person1))
+            if len(embeddings1) == 0:
+                continue
+            embeddings2: np.ndarray = load_npy(os.path.join(pathEmbeddings, selected_person2))
+            if len(embeddings1) == 0:
+                continue
+            tuple_people.append((embeddings1, embeddings2))
+            ground_truth.append(0)
 
-def load_embeddings_same_person():
-    """
-    Loads two embeddings from the same person and returns them.
-    """
-    # Get all people
-    people = filter(lambda x: x.endswith('.npy'), os.listdir(pathEmbeddings))
-    # Pick a random person having more than one embedding
-    while True:
-        person = np.random.choice(people)
-        embeddings = np.load(os.path.join(pathEmbeddings, person))
+    # We add random embeddings from the same person (so we have half the batch size embeddings from the same person)
+    while len(tuple_people) < batch_size:
+        selected_person: str = np.random.choice(people)
+        embeddings: np.ndarray = load_npy(os.path.join(pathEmbeddings, selected_person))
         if len(embeddings) > 1:
-            break
-    # Return two random embeddings from the same person
-    return np.random.choice(embeddings), np.random.choice(embeddings), 1
+            # Once we have selected two different people, we load their embeddings and pick one random embedding from each
+            tuple_people.append((embeddings1, embeddings2))
+            # TODO: Check if the new tuple have the same embeddings in the first and second position
+            ground_truth.append(1)
+
+    # Return numpy arrays
+    tuple_people = np.array(tuple_people)
+    ground_truth = np.array(ground_truth)
+    return tuple_people, ground_truth
 
 
 if __name__ == '__main__':

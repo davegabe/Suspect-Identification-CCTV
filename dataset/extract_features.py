@@ -28,20 +28,39 @@ def extract_features():
         # Save the embeddings
         np.save(os.path.join(pathEmbeddings, person + '.npy'), embeddings)
 
-def load_npy(path: str) -> np.ndarray:
+def load_embeddings_from_npy(path: str) ->  list[np.ndarray]:
+    """
+    Loads the embeddings from a person (loaded from file).
+    """
+    # Load the numpy array
+    array = np.load(path, allow_pickle=True)[0]
+    return array
+
+def random_embedding(embeddings: list[np.ndarray]) -> np.ndarray:
+    """
+    Returns a random embedding from a person (loaded from file).
+    """
+    # Get random embedding
+    data: dict = embeddings[np.random.randint(0, len(embeddings))]
+    # Return embedding
+    embedding = data["embedding"]
+    return embedding
+
+def random_embedding_from_npy(path: str) -> np.ndarray:
     """
     Returns a random embedding from a person (loaded from file).
     """
     # Load the numpy array
-    array = np.load(path, allow_pickle=True)[0]
+    array = load_embeddings_from_npy(path)
     # Check if the array is empty
-    if len(array) == 0:
-        return np.array([])
-    # Get random embedding
-    data: dict = array[np.random.randint(0, len(array))]
-    # Return embedding
-    embedding = data["embedding"]
-    return embedding
+    if len(array) > 0:
+        # Get random embedding
+        data: dict = array[np.random.randint(0, len(array))]
+        # Return embedding
+        embedding = data["embedding"]
+        return embedding
+    else:
+        raise Exception("The array is empty")
 
 def load_embeddings(batch_size=32, is_train=True, partition=0.8) -> tuple[np.ndarray, np.ndarray]:
     """
@@ -62,24 +81,29 @@ def load_embeddings(batch_size=32, is_train=True, partition=0.8) -> tuple[np.nda
     # We add random embeddings from the selected people (so we have half the batch size embeddings from different people)
     while len(tuple_people) < half_batch_size:
         selected_person1: str = np.random.choice(people)
-        embeddings1: np.ndarray = load_npy(os.path.join(pathEmbeddings, selected_person1))
+        embeddings1: list[np.ndarray] = load_embeddings_from_npy(os.path.join(pathEmbeddings, selected_person1))
         selected_person2: str = np.random.choice(people)
-        embeddings2: np.ndarray = load_npy(os.path.join(pathEmbeddings, selected_person2))
+        embeddings2: list[np.ndarray] = load_embeddings_from_npy(os.path.join(pathEmbeddings, selected_person2))
         # TODO: Check if the tuple people already contains the selected people
         if selected_person1 != selected_person2 and len(embeddings1) > 0 and len(embeddings2) > 0:
             # Once we have selected two different people, we load their embeddings and pick one random embedding from each
-            tuple_people.append(np.concatenate((embeddings1, embeddings2)))
+            selected_emb1: np.ndarray = random_embedding(embeddings1)
+            selected_emb2: np.ndarray = random_embedding(embeddings2)
+            tuple_people.append(np.concatenate((selected_emb1, selected_emb2)))
             ground_truth.append(0)
 
     # We add random embeddings from the same person (so we have half the batch size embeddings from the same person)
     while len(tuple_people) < batch_size:
         selected_person: str = np.random.choice(people)
-        embeddings1: np.ndarray = load_npy(os.path.join(pathEmbeddings, selected_person))
-        if len(embeddings1) > 1:
+        embeddings: list[np.ndarray] = load_embeddings_from_npy(os.path.join(pathEmbeddings, selected_person))
+        if len(embeddings) > 1:
             # Once we have selected two different people, we load their embeddings and pick one random embedding from each
-            embeddings2: np.ndarray = load_npy(os.path.join(pathEmbeddings, selected_person))
-            # TODO: Check if the new tuple have the same embeddings in the first and second position
-            tuple_people.append(np.concatenate((embeddings1, embeddings2)))
+            selected_emb1: np.ndarray = random_embedding(embeddings)
+            while True:
+                selected_emb2: np.ndarray = random_embedding(embeddings)
+                if not np.array_equal(selected_emb1, selected_emb2):
+                    break
+            tuple_people.append(np.concatenate((selected_emb1, selected_emb2)))
             ground_truth.append(1)
 
     # Return numpy arrays

@@ -1,6 +1,6 @@
 from models.siamese_classifier import SiameseClassifier
 from dataset.data_loader import CustomDataLoader
-# from dataset.extract_features import random_embedding_from_npy
+import tensorflow as tf
 import numpy as np
 import os
 
@@ -35,7 +35,11 @@ def main():
     # Load the model
     model = SiameseClassifier()
     model = model.model()
-    model.compile(optimizer="adam", loss="binary_crossentropy", metrics=["accuracy"])
+    model.compile(
+        optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001),
+        loss="binary_crossentropy",
+        metrics=["accuracy"]
+    )
     # Data loader
     batch_size = 256
     epochs = 50

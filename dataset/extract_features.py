@@ -30,23 +30,29 @@ def extract_features():
 
 def load_npy(path: str) -> np.ndarray:
     """
-    Loads a numpy array from a path.
+    Returns a random embedding from a person (loaded from file).
     """
     # Load the numpy array
     array = np.load(path, allow_pickle=True)[0]
+    # Check if the array is empty
+    if len(array) == 0:
+        return np.array([])
     # Get random embedding
     data: dict = array[np.random.randint(0, len(array))]
     # Return embedding
     embedding = data["embedding"]
     return embedding
 
-def load_embeddings(batch_size=32):
+def load_embeddings(batch_size=32, is_train=True, partition=0.8) -> tuple[np.ndarray, np.ndarray]:
     """
     Loads two people embeddings and returns them.
     """
     # Get all people
-    people = filter(lambda x: x.endswith('.npy'), os.listdir(pathEmbeddings))
-    people = np.array(list(people))
+    people = list(filter(lambda x: x.endswith('.npy'), os.listdir(pathEmbeddings)))
+    if (is_train):
+        people = people[:int(len(people) * partition)]
+    else:
+        people = people[int(len(people) * partition):]
     # Get half the batch size
     half_batch_size = batch_size // 2
     # List of tuples concatenated embeddings of two people
@@ -56,16 +62,12 @@ def load_embeddings(batch_size=32):
     # We add random embeddings from the selected people (so we have half the batch size embeddings from different people)
     while len(tuple_people) < half_batch_size:
         selected_person1: str = np.random.choice(people)
+        embeddings1: np.ndarray = load_npy(os.path.join(pathEmbeddings, selected_person1))
         selected_person2: str = np.random.choice(people)
+        embeddings2: np.ndarray = load_npy(os.path.join(pathEmbeddings, selected_person2))
         # TODO: Check if the tuple people already contains the selected people
-        if selected_person1 != selected_person2:
+        if selected_person1 != selected_person2 and len(embeddings1) > 0 and len(embeddings2) > 0:
             # Once we have selected two different people, we load their embeddings and pick one random embedding from each
-            embeddings1: np.ndarray = load_npy(os.path.join(pathEmbeddings, selected_person1))
-            if len(embeddings1) == 0:
-                continue
-            embeddings2: np.ndarray = load_npy(os.path.join(pathEmbeddings, selected_person2))
-            if len(embeddings1) == 0:
-                continue
             tuple_people.append(np.concatenate((embeddings1, embeddings2)))
             ground_truth.append(0)
 

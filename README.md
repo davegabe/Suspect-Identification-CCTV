@@ -15,8 +15,10 @@ To run the project, you need to install the conda environment from the `environm
 conda env create -f environment.yml
 # Activate the conda environment
 conda active si-cctv
-# Add the conda environment to the LD_LIBRARY_PATH
+# Add LD_LIBRARY_PATH to the conda environment
 conda env config vars set LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CONDA_PREFIX/lib/
+# Add XLA_FLAGS to the conda environment
+conda env config vars set XLA_FLAGS=--xla_gpu_cuda_data_dir=/usr/lib/cuda
 ```
 
 To download the dataset, you need to run the `dataset.py` script. This process will take a while. It will download the dataset, save all the archives in the `downloaded` folder and then extract everything in the `data` folder.

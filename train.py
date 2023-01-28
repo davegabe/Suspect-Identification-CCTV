@@ -6,29 +6,29 @@ import os
 
 model_path = "models/siamese_classifier.h5"
 
-# def hardcode_test(model):
-#     for i in range(10):
+def hardcode_test(model, test_data_loader):
+    for i in range(10):
+        print("Different people")
+        person_name1 = "Zhu_Rongji.npy"   #LFW/lfw_funneled/Zhu_Rongji
+        embeddings = test_data_loader.get_by_name(person_name1)
+        embedding1 = embeddings[np.random.randint(0, len(embeddings))]
+        person_name2 = "Yoshiyuki_Kamei.npy"
+        embeddings = test_data_loader.get_by_name(person_name2)
+        embedding2 = embeddings[np.random.randint(0, len(embeddings))]
+        dist = test_data_loader.euclidean_distance(embedding1, embedding2)
+        ypred = model.predict(dist)
+        print("ypred: ", ypred)
 
-#         print("Different people")
-#         person_name1 = "Zhu_Rongji"   #LFW/lfw_funneled/Zhu_Rongji
-#         embedding1 = random_embedding_from_npy(os.path.join("./embeddings", person_name1+".npy"))
-#         person_name2 = "Yoshiyuki_Kamei"
-#         embedding2 = random_embedding_from_npy(os.path.join("./embeddings", person_name2+".npy"))
-#         concat = np.array([np.concatenate((embedding1, embedding2))])
-#         ypred = model.predict(concat)
-#         print("ypred: ", ypred)
+        print("Same people")
+        person_name1 = "Zhu_Rongji.npy"
+        embeddings = test_data_loader.get_by_name(person_name2)
+        embedding1 = embeddings[np.random.randint(0, len(embeddings))]
+        embedding2 = embeddings[np.random.randint(0, len(embeddings))]
+        dist = test_data_loader.euclidean_distance(embeddings[0], embeddings[1])
+        ypred = model.predict(dist)
+        print("ypred: ", ypred)
 
-#         print("Same people")
-#         person_name1 = "Zhu_Rongji"
-#         embedding1 = random_embedding_from_npy(os.path.join("./embeddings", person_name1+".npy"))
-#         person_name2 = "Zhu_Rongji"
-#         embedding2 = random_embedding_from_npy(os.path.join("./embeddings", person_name2+".npy"))
-        
-#         concat = np.array([np.concatenate((embedding1, embedding2))])
-#         ypred = model.predict(concat)
-#         print("ypred: ", ypred)
-
-#         print("\n\n\n\n")
+        print("\n\n")
 
 
 def main():
@@ -42,7 +42,7 @@ def main():
     )
     # Data loader
     batch_size = 256
-    epochs = 50
+    epochs = 2
     train_partition = 0.8
     train_data_loader = CustomDataLoader(batch_size=batch_size, is_train=True, train_partition=train_partition)
     test_data_loader = CustomDataLoader(batch_size=batch_size, is_train=False, train_partition=train_partition)
@@ -51,12 +51,12 @@ def main():
     #     # Load the modelc
     #     model.load_weights(model_path)
     # else:
-    # Train
+        # Train
     model.fit(train_data_loader, epochs=epochs, batch_size=batch_size, validation_data=test_data_loader)
     # Save the model
     model.save(model_path)
     # Hard-coded test
-    # hardcode_test(model)    
+    #hardcode_test(model, test_data_loader)  
     
 
 if __name__ == "__main__":

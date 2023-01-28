@@ -108,7 +108,7 @@ class CustomDataLoader(tf.keras.utils.Sequence):
         while len(euclidean_distances) < batch_size:
             selected_person: str = np.random.choice(people_more_embeddings)
             emb = self.embeddings[selected_person]
-            indexes = np.random.randint(0, len(emb), size=2)
+            indexes = np.random.choice(len(emb), size=2, replace=False)
             euclidean_distances.append(self.euclidean_distance(emb[indexes[0]], emb[indexes[1]]))
             ground_truth.append(1)
 
@@ -123,3 +123,9 @@ class CustomDataLoader(tf.keras.utils.Sequence):
 
     def __len__(self):
         return self.n // self.batch_size
+
+    def get_by_name(self, name: str) -> np.ndarray:
+        """
+        Returns the embeddings of a person.
+        """
+        return self.embeddings[name]

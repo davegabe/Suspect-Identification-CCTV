@@ -37,7 +37,7 @@ def main():
     model = model.model()
     model.compile(optimizer="adam", loss="binary_crossentropy", metrics=["accuracy"])
     # Data loader
-    batch_size = 32
+    batch_size = 256
     epochs = 50
     train_partition = 0.8
     train_data_loader = CustomDataLoader(batch_size=batch_size, is_train=True, train_partition=train_partition)

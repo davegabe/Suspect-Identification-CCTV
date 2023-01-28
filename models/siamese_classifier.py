@@ -1,14 +1,11 @@
 import tensorflow as tf
 
 class SiameseClassifier(tf.keras.Model):
-    def __init__(self, input_shape=1024):
+    def __init__(self, input_shape=512):
         super().__init__()
         self.in_shape = input_shape
         self.classifier = tf.keras.Sequential([
-            tf.keras.layers.BatchNormalization(),
-            tf.keras.layers.Dense(1024, activation="relu"),
             tf.keras.layers.Dense(512, activation="relu"),
-            tf.keras.layers.Dense(128, activation="relu"),
             tf.keras.layers.Dense(1, activation="sigmoid")
         ])
 

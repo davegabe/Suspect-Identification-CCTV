@@ -28,6 +28,14 @@ def extract_features():
         # Save the embeddings
         np.save(os.path.join(pathEmbeddings, person + '.npy'), embeddings)
 
+
+def euclidean_distance(x1: np.ndarray, x2: np.ndarray) -> np.ndarray:
+    """
+    Returns the euclidean distance between two embeddings.
+    Resulting shape will be the same as the input.
+    """
+    return np.sqrt(np.square(x1 - x2))
+
 def load_embeddings_from_npy(path: str) ->  list[np.ndarray]:
     """
     Loads the embeddings from a person (loaded from file).
@@ -89,7 +97,7 @@ def load_embeddings(batch_size=32, is_train=True, partition=0.8) -> tuple[np.nda
             # Once we have selected two different people, we load their embeddings and pick one random embedding from each
             selected_emb1: np.ndarray = random_embedding(embeddings1)
             selected_emb2: np.ndarray = random_embedding(embeddings2)
-            tuple_people.append(np.concatenate((selected_emb1, selected_emb2)))
+            tuple_people.append(euclidean_distance(selected_emb1, selected_emb2))
             ground_truth.append(0)
 
     # We add random embeddings from the same person (so we have half the batch size embeddings from the same person)
@@ -103,12 +111,20 @@ def load_embeddings(batch_size=32, is_train=True, partition=0.8) -> tuple[np.nda
                 selected_emb2: np.ndarray = random_embedding(embeddings)
                 if not np.array_equal(selected_emb1, selected_emb2):
                     break
-            tuple_people.append(np.concatenate((selected_emb1, selected_emb2)))
+            tuple_people.append(euclidean_distance(selected_emb1, selected_emb2))
             ground_truth.append(1)
 
     # Return numpy arrays
     tuple_people = np.array(tuple_people)
+    # ADESSO: [[dist_f1, dist_f2, ...., dist_fn], [dist_f1, dist_f2, ...., dist_fn], ...]
+    # PRIMA : [[f1_1, f2_1, ...., fn_1, f1_2, f2_2, ...., fn_2], [f1_1, f2_1, ...., fn_1, f1_2, f2_2, ...., fn_2], ...]
     ground_truth = np.array(ground_truth)
+    # # Shuffle the data
+    # indices = np.arange(tuple_people.shape[0])
+    # np.random.shuffle(indices)
+    # tuple_people = tuple_people[indices]
+    # ground_truth = ground_truth[indices]
+
     return tuple_people, ground_truth
 
 

@@ -25,20 +25,14 @@ def main():
     frames = sorted(os.listdir(path))
     # For each frame
     for frame in frames:
-        # Get the frame
-        frame_img = cv2.imread(os.path.join(path, frame))
+        frame_img = cv2.imread(os.path.join(path, frame), cv2.IMREAD_COLOR)
+        #the channel is BGR, convert to RGB
+        frame_img = cv2.cvtColor(frame_img, cv2.COLOR_BGR2RGB)
         # Compare the frame with the gallery
-        identity, boundingBoxes, keyPoints = check_identity(gallery, frame_img)
+        identity = check_identity(gallery, frame_img)
         if identity is not None:
             print("In frame " + frame + " the identity is " + identity)
 
-            #draw bounding box
-            print(boundingBoxes)
-            for box in boundingBoxes:
-                cv2.rectangle(frame_img, (box[0][0], box[0][1]), (box[0][2], box[0][3]), (0, 255, 0), 2)
-            #draw keypoints
-            for keypoint in keyPoints:
-                cv2.circle(frame_img, (keypoint[0], keypoint[1]), 2, (0, 0, 255), 2)
             plt.imshow(frame_img)
             plt.title("Identity: " + identity)
             plt.imsave('results/' + frame + ".png", frame_img)

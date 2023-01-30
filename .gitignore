@@ -5,6 +5,8 @@ facenet/
 
 embeddings/
 
+results/
+
 *.h5
 
 *.cpython*

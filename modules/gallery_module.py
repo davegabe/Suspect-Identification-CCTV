@@ -2,7 +2,7 @@ import os
 import numpy as np
 import cv2
 
-from insight_utilities.insight_interface import compareTwoFaces
+from insight_utilities.insight_interface import compareTwoFaces, get_face
 
 def build_gallery(other_environment: str, max_size=100):
     """
@@ -29,8 +29,12 @@ def build_gallery(other_environment: str, max_size=100):
         for image in images:
             # Load the image
             img = cv2.imread(os.path.join(path, face, image))
+            # Get features of the face
+            face_feature, bboxes, kps = get_face(img)
+            if face_feature is None:
+                continue
             # Add the image to the gallery
-            gallery[face].append(img)
+            gallery[face].append(face_feature)
     # Return the gallery
     return gallery
 
@@ -45,16 +49,21 @@ def check_identity(gallery: dict, frame: np.ndarray):
     Returns:
         str: The name of the face if it is in the gallery, "Unknown" otherwise, None if there is no face.
     """
+    # Get the features of the face
+    frame_feature, bboxes, kps = get_face(frame)
+    # If there is no face
+    if frame_feature is None:
+        return None
     # For each face in the gallery
     for face in gallery:
         # For every image of the face
-        for image in gallery[face]:
+        for face_feature in gallery[face]:
             # Check if the face is in the gallery
-            _, is_same, boundingBoxes, keyPoints = compareTwoFaces(frame, image)
+            _, is_same = compareTwoFaces(frame_feature, face_feature)
         if is_same == 1:
-            return face, boundingBoxes, keyPoints
+            return face
         if is_same < 0:
             # Return None
-            return None, [], []
+            return None
     # If the face is not in the gallery
-    return "Unknown", boundingBoxes, keyPoints
+    return "Unknown"

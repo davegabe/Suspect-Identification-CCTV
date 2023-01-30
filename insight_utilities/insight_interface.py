@@ -17,8 +17,20 @@ model_path = os.path.join(assets_dir, 'w600k_r50.onnx')
 rec = ArcFaceONNX(model_path)
 rec.prepare(0)
 
+def get_face(img):
+    """
+    input: an image
+    output: a cropped image of the face in the image
+    """
+    bboxes, kpss = detector.autodetect(img, max_num=1)
+    if bboxes.shape[0]==0:
+        return None, [], []
+    kps = kpss[0]
+    face = rec.get(img, kps)
+    return face, bboxes, kps
 
-def compareTwoFaces(img1, img2):     
+
+def compareTwoFaces(feat1, feat2): 
     """
     input: two images of faces. Note: this is not path but rather to the already read image.
     #img1 is the frame while img2 is the face from the database.
@@ -30,16 +42,6 @@ def compareTwoFaces(img1, img2):
     if the rapid conclusion is -1.0, it means that no face was detected in the first image.
     if the rapid conclusion is -2.0, it means that no face was detected in the second image.
     """
-    bboxes1, kpss1 = detector.autodetect(img1, max_num=1)
-    if bboxes1.shape[0]==0:
-        return -1.0, -1.0, [], []
-    bboxes2, kpss2 = detector.autodetect(img2, max_num=1)
-    if bboxes2.shape[0]==0:
-        return -1.0, -2.0, [], []
-    kps1 = kpss1[0]
-    kps2 = kpss2[0]
-    feat1 = rec.get(img1, kps1) #feature vector for img1
-    feat2 = rec.get(img2, kps2) #feature vector for img2
     sim = rec.compute_sim(feat1, feat2)     #this is a similarity score
     if sim<0.2:
         rapid_conclusion = 0
@@ -48,5 +50,5 @@ def compareTwoFaces(img1, img2):
     else:
         rapid_conclusion = 1
     #also return the bounding boxes and keypoints of the probe image
-    return sim, rapid_conclusion, bboxes1, kpss1
+    return sim, rapid_conclusion
     

@@ -2,7 +2,7 @@ import os
 import numpy as np
 import cv2
 
-from insight_utilities.insight_interface import compareTwoFaces, get_face
+from insight_utilities.insight_interface import compareTwoFaces, get_face, get_faces
 
 def build_gallery(other_environment: str, max_size=100):
     """
@@ -50,20 +50,27 @@ def check_identity(gallery: dict, frame: np.ndarray):
         str: The name of the face if it is in the gallery, "Unknown" otherwise, None if there is no face.
     """
     # Get the features of the face
-    frame_feature, bboxes, kps = get_face(frame)
-    # If there is no face
-    if frame_feature is None:
-        return None, bboxes
-    # For each face in the gallery
-    for face in gallery:
-        # For every image of the face
-        for face_feature in gallery[face]:
-            # Check if the face is in the gallery
-            _, is_same = compareTwoFaces(frame_feature, face_feature)
-        if is_same == 1:
-            return face, bboxes
-        if is_same < 0:
-            # Return None
-            return None, bboxes
+    frame_features, bboxes, kpss = get_faces(frame)
+    # If there are no faces
+    if len(frame_features) == 0:
+        return [], bboxes
+    # For each face in the frame
+    names = []
+    for i, frame_feature in enumerate(frame_features):
+        # For each face in the gallery
+        for face in gallery:
+            # If the face has already been found
+            if len(names) == i+1:
+                break
+            # For every image of the face
+            for face_feature in gallery[face]:
+                # Check if the face is in the gallery
+                _, is_same = compareTwoFaces(frame_feature, face_feature)
+                if is_same == 1:
+                    names.append(face)
+                    break
+        # If the face is not in the gallery
+        if len(names) == i:
+            names.append("Unknown")
     # If the face is not in the gallery
-    return "Unknown", bboxes
+    return names, bboxes

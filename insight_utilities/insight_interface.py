@@ -17,6 +17,20 @@ model_path = os.path.join(assets_dir, 'w600k_r50.onnx')
 rec = ArcFaceONNX(model_path)
 rec.prepare(0)
 
+def get_faces(img):
+    """
+    Returns the faces from the image.
+    """
+    bboxes, kpss = detector.autodetect(img)
+    if bboxes.shape[0]==0:
+        return [], [], []
+    faces = []
+    # For each detected face, get the face and append it to the faces list.
+    for kps in kpss:
+        face = rec.get(img, kps)
+        faces.append(face)
+    return faces, bboxes, kpss
+
 def get_face(img):
     """
     input: an image

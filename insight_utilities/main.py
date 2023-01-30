@@ -6,8 +6,8 @@ import argparse
 import cv2
 import numpy as np
 import onnxruntime
-from scrfd import SCRFD
-from arcface_onnx import ArcFaceONNX
+from scrfd import SCRFD                 #face detection
+from arcface_onnx import ArcFaceONNX    #face recognition
 
 onnxruntime.set_default_logger_severity(3)
 

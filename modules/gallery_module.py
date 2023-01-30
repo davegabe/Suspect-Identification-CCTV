@@ -53,7 +53,7 @@ def check_identity(gallery: dict, frame: np.ndarray):
     frame_feature, bboxes, kps = get_face(frame)
     # If there is no face
     if frame_feature is None:
-        return None
+        return None, bboxes
     # For each face in the gallery
     for face in gallery:
         # For every image of the face
@@ -61,9 +61,9 @@ def check_identity(gallery: dict, frame: np.ndarray):
             # Check if the face is in the gallery
             _, is_same = compareTwoFaces(frame_feature, face_feature)
         if is_same == 1:
-            return face
+            return face, bboxes
         if is_same < 0:
             # Return None
-            return None
+            return None, bboxes
     # If the face is not in the gallery
-    return "Unknown"
+    return "Unknown", bboxes

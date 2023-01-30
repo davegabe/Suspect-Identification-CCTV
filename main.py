@@ -1,6 +1,7 @@
 import os
 import numpy as np
 import cv2
+import sys
 
 from modules.gallery_module import build_gallery, check_identity
 
@@ -29,9 +30,25 @@ def main():
         #the channel is BGR, convert to RGB
         frame_img = cv2.cvtColor(frame_img, cv2.COLOR_BGR2RGB)
         # Compare the frame with the gallery
-        identity = check_identity(gallery, frame_img)
+        identity, bboxes = check_identity(gallery, frame_img)
         if identity is not None:
             print("In frame " + frame + " the identity is " + identity)
+            #draw the bounding box
+            
+
+            #draw the bouding box in plt
+            for bbox in bboxes:
+                x1 = int(bbox[0])
+                y1 = int(bbox[1])
+                x2 = int(bbox[2])
+                y2 = int(bbox[3])
+
+                #draw the bounding box
+                cv2.rectangle(frame_img, (x1, y1), (x2, y2), (255, 0, 0), 2)
+                #print the identity reducing the size of the text to be minor than AA
+                cv2.putText(frame_img, identity, (x1, y1), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
+
+
 
             plt.imshow(frame_img)
             plt.title("Identity: " + identity)

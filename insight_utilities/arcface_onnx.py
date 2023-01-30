@@ -8,7 +8,7 @@ import numpy as np
 import cv2
 import onnx
 import onnxruntime
-import face_align
+import insight_utilities.face_align as face_align
 
 __all__ = [
     'ArcFaceONNX',

@@ -25,7 +25,7 @@ def more_faces_detected(frames: list[np.ndarray]) -> np.ndarray:
     return best
 
 
-def select_best_frame(frames: list[np.ndarray], criteria = "more_faces_detected") -> np.ndarray:
+def select_best_frames(frames: list[np.ndarray], criteria = "more_faces_detected") -> list[np.ndarray]:
     """
     Select the best frame from the three cameras
 
@@ -34,8 +34,10 @@ def select_best_frame(frames: list[np.ndarray], criteria = "more_faces_detected"
         criteria (str, optional): Criteria to select the best frame. Defaults to "more_faces_detected".
     
     Returns:
-        np.ndarray: The best frame
+        np.ndarray: The best frames
     """
+    return frames
+
     if len(frames) == 1:
         return frames[0]
     else:

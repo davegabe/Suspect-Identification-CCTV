@@ -4,6 +4,11 @@ import cv2
 
 from insight_utilities.insight_interface import compareTwoFaces, get_face, get_faces
 
+
+
+
+
+
 def build_gallery(other_environment: str, scenario_camera: str, max_size=100):
     """
     Build a gallery from the other environment.
@@ -76,3 +81,59 @@ def check_identity(gallery: dict, frame: np.ndarray):
             names.append("Unknown")
     # If the face is not in the gallery
     return names, bboxes, kpss
+
+class Identity:
+    """
+    Class that represents an identity.
+    """
+    last_id: int = 0
+    def __init__(self):
+        self.id: int = last_id # temporary id
+        self.final_id: str = "" # definitive id, empty if the identity is not definitive
+        self.bboxes: list[np.ndarray] = [] # bounding boxes of the faces in the frame 
+        self.kps: list[np.ndarray] = [] # keypoints of the faces in the frame
+        self.frames: list[str] = [] # list of paths to the frames where the face is present
+        self.faces: list[np.ndarray] = [] # list of features of the faces in the frame. The faces are alrady cropped
+        self.is_in_scene: bool = True # this will be False when the person disappears from the scene, at this point the decision module will do stuff and replace the temporary identity with a definitive one
+        # Increment the last id
+        last_id += 1
+    
+    def add_frame(self, frame: np.ndarray, bboxes: np.ndarray, kps: np.ndarray, face_features: np.ndarray):
+        """
+        Add a frame to the identity.
+
+        Args:
+            frame (np.ndarray): The frame.
+            bboxes (np.ndarray): The bounding boxes of the faces.
+            kps (np.ndarray): The keypoints of the faces.
+        """
+        # Add the frame to the list of frames
+        self.frames.append(frame)
+        # Add the bounding boxes to the list of bounding boxes
+        self.bboxes.append(bboxes)
+        # Add the keypoints to the list of keypoints
+        self.kps.append(kps)
+        # Add the features to the list of features
+        self.faces.append(face_features)
+
+    def check_if_identity_matches(self, face):
+        #this method is going to be used to check if the face is the same as the one saved in self.faces
+        for face_feature in self.faces[:-5]:
+            _, is_same = compareTwoFaces(face, face_feature)
+            if is_same == 1:
+                return True
+        return False
+
+
+
+"""
+temp_identities = {
+    "identity_temp": {
+        "frames": [frame1, frame2, frame3,  ...],     # each element of this (and also the following) list is a list of results for each camera (list of 3 elements)
+        "bboxes": [bbox1, bbox2, bbox3, ...],
+        "kpss": [kps1, kps2, kps3, ...],
+        "features": [feature1, feature2, feature3, ...]
+        "is_in_scene": True  # this will be False when the person disappears from the scene, at this point the decision module will do stuff and replace the temporary identity with a definitive one
+    }
+}
+"""

@@ -48,4 +48,9 @@ def select_best_frame(frames: list[np.ndarray], criteria = "more_faces_detected"
         # ALSOIDEA: Otherwise we could just use position inside the frame (easier but not as good (and maybe not so easy))
         # ALSOALSOIDEA: Otherwise we could just use this approach (continuously track the same person) only if 1 camera is used
         return best
-        
+    
+# where fram-i = tuple(frames[0], faces[0], bboxs[0], kpss[0])
+# Result of frame selection:
+# Each element of the list is a list of "fram-i" tuples having some common characteristics and so we have to take the same decision
+# [[fram1],[fram2]] frame selection banale dove ogni frame avrà una decisione indipendente
+# [[fram1,fram2,fram3,fram4,fram5], ...] frame selection dove ogni frame sarà ad esempio sulla stessa tracked person e quindi si dovrà prendere la stessa decisione. Quindi fram1,fram2,fram3,fram4,fram5 sono tutti sulla stessa persona e quindi si dovrà prendere la stessa decisione per tutti

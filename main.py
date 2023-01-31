@@ -31,6 +31,7 @@ def main():
         # Load all frames
         frames = list(filter(lambda x: x.endswith(".jpg"), os.listdir(paths[0])))
         frames = sorted(frames)
+        #lista di sospetti
         # For each frame
         for frame in frames:
             camera_frames = [cv2.imread(os.path.join(path, frame)) for path in paths]
@@ -72,3 +73,41 @@ if __name__ == "__main__":
     # detector.prepare(0)
     # print(detector.autodetect(img, max_num=2))
     main()
+
+
+
+"""
+Tracciare continuamente una persona con una label temporanea, fregandoci di chi è effetivamente.  L'intuizione è che una persona verosimilmente non si
+può teletrasportare quindi i frame successivi a quello in cui è stata identificata, avranno una similarità quasi identica a quello precedente.
+Per alleggerire il calcolo, si può usare una funzione di similarità che sfrutta solo gli ultimi X frames
+Quando la persona scompare dalla scena, la label temporanea viene sostituita con una label definitiva (che viene assegnata a tutti i frame precedenti).
+"""
+
+"""
+
+temp_identities = {
+    "identity_temp": {
+        "frames": [frame1, frame2, frame3,  ...],     # each element of this (and also the following) list is a list of results for each camera (list of 3 elements)
+        "bboxes": [bbox1, bbox2, bbox3, ...],
+        "kpss": [kps1, kps2, kps3, ...],
+        "features": [feature1, feature2, feature3, ...]
+        "is_in_scene": True  # this will be False when the person disappears from the scene, at this point the decision module will do stuff and replace the temporary identity with a definitive one
+    }
+}
+
+for frame in frames:
+    for camera in cameras:
+        # for each face, i check if this face is in temp_identities
+            # if it is, i update the temp_identity (add the frame, the bboxes, the kpss, the features)
+            # if it is not, i create a new temp_identity
+    # at the end of the loop, if there is a face in temp_identities (maybe we have to wait for more than 1 frame where the face is not present) that is not in the current frame, i set is_in_scene to False
+    # decision module will check if there are not is_in_scene temp_identities and will decide what their permanent identity is (removing them from temp_identities and putting somewhere else)
+    # printing the results somehow
+
+
+
+for key in temp_identities.keys():
+    for frame in dict[key]["frames"]:
+        #detecta faccia
+        #vedi quale è la più simile
+"""

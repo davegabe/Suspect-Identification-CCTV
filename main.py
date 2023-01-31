@@ -37,7 +37,7 @@ def main():
             # Pick the best frame
             best_frame = select_best_frame(camera_frames)
             # Compare the frame with the gallery
-            identities, bboxes = check_identity(gallery, best_frame)
+            identities, bboxes, kpss = check_identity(gallery, best_frame)
             for i, identity in enumerate(identities):
                 print("In frame " + frame + " the identity is " + identity)
                 # Draw the bouding box in plt
@@ -45,6 +45,10 @@ def main():
                 y1 = int(bboxes[i][1])
                 x2 = int(bboxes[i][2])
                 y2 = int(bboxes[i][3])
+                # Draw the keypoints
+                for kp in kpss[i]:
+                    cv2.circle(best_frame, (int(kp[0]), int(kp[1])), 1, (0, 0, 255), 1)
+
                 cv2.rectangle(best_frame, (x1, y1), (x2, y2), (255, 0, 0), 2)
                 # Print the identity reducing the size of the text to be minor than AA
                 cv2.putText(best_frame, identity, (x1, y1), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)

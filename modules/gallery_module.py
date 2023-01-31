@@ -48,12 +48,14 @@ def check_identity(gallery: dict, frame: np.ndarray):
 
     Returns:
         str: The name of the face if it is in the gallery, "Unknown" otherwise, None if there is no face.
+        [np.ndarray]: The bounding boxes of the faces.
+        [np.ndarray]: The keypoints of the faces.
     """
     # Get the features of the face
     frame_features, bboxes, kpss = get_faces(frame)
     # If there are no faces
     if len(frame_features) == 0:
-        return [], bboxes
+        return [], bboxes, kpss
     # For each face in the frame
     names = []
     for i, frame_feature in enumerate(frame_features):
@@ -73,4 +75,4 @@ def check_identity(gallery: dict, frame: np.ndarray):
         if len(names) == i:
             names.append("Unknown")
     # If the face is not in the gallery
-    return names, bboxes
+    return names, bboxes, kpss

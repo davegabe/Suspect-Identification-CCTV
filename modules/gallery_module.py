@@ -4,7 +4,7 @@ import cv2
 
 from insight_utilities.insight_interface import compareTwoFaces, get_face, get_faces
 
-def build_gallery(other_environment: str, max_size=100):
+def build_gallery(other_environment: str, scenario_camera: str, max_size=100):
     """
     Build a gallery from the other environment.
 
@@ -22,7 +22,7 @@ def build_gallery(other_environment: str, max_size=100):
     # For each face in the gallery
     for face in faces:
         # Get all the .pgm images of the face
-        images = os.listdir(os.path.join(path, face))[:max_size]
+        images = list(filter(lambda x: x.endswith(".pgm"), os.listdir(os.path.join(path, face))))[:max_size]
         # Create a list of images
         gallery[face] = []
         # For each image

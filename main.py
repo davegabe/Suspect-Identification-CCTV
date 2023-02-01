@@ -10,27 +10,47 @@ from modules.decision_module import decide_identities
 from dataset.dataset import protocols
 from config import UNKNOWN_SIMILARITY_THRESHOLD, MAX_CAMERAS
 
+"""
+for each frame
+        for each identity  
+            see if frame is inside identity
+                if yes
+                    draw bbox and name
+                if no
+                    continue
+"""
 
-def draw(identities: list[Identity], bboxes: list[np.ndarray], kpss: list[np.ndarray], camera_img: np.ndarray, frame: str, num_cam: int):
+
+
+
+def draw(identities: list[Identity], frames: list[str]):
+
+    for frame in frames:
+        camera_images: list[np.ndarray] = [cv2.imread(os.path.join(path, frame)) for path in paths]
+
     for i, identity in enumerate(identities):
-        print("In frame " + frame + " the identity is " + identity.name)
-        # Draw the bouding box in plt
-        x1 = int(bboxes[i][0])
-        y1 = int(bboxes[i][1])
-        x2 = int(bboxes[i][2])
-        y2 = int(bboxes[i][3])
-        # Draw the keypoints
-        for kp in kpss[i]:
-            cv2.circle(camera_img, (int(kp[0]), int(kp[1])), 1, (0, 0, 255), 1)
+        for bbox, kps, frame in zip(identity.bboxes, identity.kpss, identity.frames):
+            print("In frame " + frame + " the identity is " + identity.name)
+            # Draw the bouding box in plt
+            x1 = int(bbox[0])
+            y1 = int(bbox[1])
+            x2 = int(bbox[2])
+            y2 = int(bbox[3])
+            # Draw the keypoints
+            for kp in kps:
+                cv2.circle(camera_img, (int(kp[0]), int(kp[1])), 1, (0, 0, 255), 1)
 
-        cv2.rectangle(camera_img, (x1, y1), (x2, y2), (255, 0, 0), 2)
-        # Print the identity reducing the size of the text to be minor than AA
-        cv2.putText(camera_img, identity.name, (x1, y1), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
-        # Save the image
-        plt.imshow(camera_img)
-        plt.title("Identity: " + identity.name)
-        plt.imsave('results/' + f"_{num_cam}_" + frame + ".png", camera_img)
-        plt.close()
+            cv2.rectangle(camera_img, (x1, y1), (x2, y2), (255, 0, 0), 2)
+            # Print the identity reducing the size of the text to be minor than AA
+            cv2.putText(camera_img, identity.name, (x1, y1), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
+            # Save the image
+            plt.imshow(camera_img)
+            plt.title("Identity: " + identity.name)
+            plt.imsave('results/' + f"_{num_cam}_" + frame + ".png", camera_img)
+            plt.close()
+
+
+
 
 def handle_frame(camera_images: list[np.ndarray], gallery: dict, unknown_identities: list[Identity], known_identities: list[Identity], frame: str):
     found_identities: list[Identity] = [] # identities which have been found in the current frame
@@ -102,7 +122,9 @@ def main():
             print(f"Current frame: {frame}")
             camera_images: list[np.ndarray] = [cv2.imread(os.path.join(path, frame)) for path in paths]
             handle_frame(camera_images, gallery, unknown_identities, known_identities, frame)
-        
+
+        # Draw result images
+        draw(known_identities)
         # Evaluate the results
         print(f"Evaluation for {environment} using {str(MAX_CAMERAS)} cameras")
         evaluate_system(known_identities, os.path.join(dataset_path, f"{environment}_faces"))
@@ -126,7 +148,7 @@ Quando la persona scompare dalla scena, la label temporanea viene sostituita con
 
 temp_identities = {
     "identity_temp": {
-        "frames": [frame1, frame2, frame3,  ...],     # each element of this (and also the following) list is a list of results for each camera (list of 3 elements)
+        "frames": [[frame1, frame2, frame3], [frame2...], [frame3...],  ...],     # each element of this (and also the following) list is a list of results for each camera (list of 3 elements)
         "bboxes": [bbox1, bbox2, bbox3, ...],
         "kpss": [kps1, kps2, kps3, ...],
         "features": [feature1, feature2, feature3, ...]

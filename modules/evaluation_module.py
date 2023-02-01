@@ -64,6 +64,7 @@ def evaluate_system(known_identities: list[Identity], groundtruth_faces_path: st
     detected_frames = detected.keys()
     # Get the frames where the system didn't detect faces
     not_detected_frames = set(groundtruth.keys()) - set(detected_frames)
+    extra_detected_frames = set(detected_frames) - set(groundtruth.keys())
     # Get the frames where the system detected faces but didn't detect the correct person
     incorrect_frames = set()
     false_positives: dict[str, list[str]] = {}

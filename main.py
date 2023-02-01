@@ -27,24 +27,25 @@ def draw(identities: list[Identity], frames: list[str], paths: list[str]):
         # For each camera image
         for num_cam, camera_img in enumerate(camera_images):
             found = False
-            #Find the identity in the frame, draw the bbox and the name
+            # Find the identity in the frame, draw the bbox and the name
             for i, identity in enumerate(identities):
-                if f"{num_cam}_{frame}" in identity.frames:
-                    i = identity.frames.index(f"{num_cam}_{frame}")
-                    print(f"In frame {frame} of camera {num_cam}, the identity is {identity.name}")
-                    # Draw the bouding box in plt
-                    x1 = int(identity.bboxes[i][0])
-                    y1 = int(identity.bboxes[i][1])
-                    x2 = int(identity.bboxes[i][2])
-                    y2 = int(identity.bboxes[i][3])
-                    # Draw the keypoints
-                    for kp in identity.kps[i]:
-                        cv2.circle(camera_img, (int(kp[0]), int(kp[1])), 1, (0, 0, 255), 1)
+                # Check if the frame is in the identity and draw the bbox and the name
+                for i in range(len(identity.frames)):
+                    if identity.frames[i] == f"{num_cam}_{frame}":
+                        print(f"In frame {frame} of camera {num_cam}, the identity is {identity.name}")
+                        # Draw the bouding box in plt
+                        x1 = int(identity.bboxes[i][0])
+                        y1 = int(identity.bboxes[i][1])
+                        x2 = int(identity.bboxes[i][2])
+                        y2 = int(identity.bboxes[i][3])
+                        # Draw the keypoints
+                        for kp in identity.kps[i]:
+                            cv2.circle(camera_img, (int(kp[0]), int(kp[1])), 1, (0, 0, 255), 1)
 
-                    cv2.rectangle(camera_img, (x1, y1), (x2, y2), (255, 0, 0), 2)
-                    # Print the identity reducing the size of the text to be minor than AA
-                    cv2.putText(camera_img, identity.name, (x1, y1), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
-                    found = True
+                        cv2.rectangle(camera_img, (x1, y1), (x2, y2), (255, 0, 0), 2)
+                        # Print the identity reducing the size of the text to be minor than AA
+                        cv2.putText(camera_img, identity.name, (x1, y1), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
+                found = True
             # Save the image
             if found:
                 plt.imshow(camera_img)
@@ -116,7 +117,7 @@ def main():
         unknown_identities: list[Identity] = [] # temporary identities which don't have a label yet
         known_identities: list[Identity] = [] # permanent identities which have a label
         print(paths)
-        frames_reduced = frames[130:int(len(frames)*0.2)]
+        frames_reduced = frames[130:int(len(frames))]
         for frame in frames_reduced:
             print(f"Current frame: {frame}")
             camera_images: list[np.ndarray] = [cv2.imread(os.path.join(path, frame)) for path in paths]
@@ -124,7 +125,8 @@ def main():
         # Force last decision
         unknown_identities, known_identities = decide_identities(unknown_identities, known_identities, gallery, force=True)
         print(len(known_identities), len(frames_reduced))
-        # Draw result images
+        print(known_identities, unknown_identities)
+        # # Draw result images
         draw(known_identities + unknown_identities, frames_reduced, paths)
         # Evaluate the results
         print(f"Evaluation for {environment} using {str(MAX_CAMERAS)} cameras")

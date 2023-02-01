@@ -153,6 +153,9 @@ class Identity:
         # this method is going to be used to check if the face is the same as the one saved in self.faces
         
         return sim
+    
+    def __str__(self):
+        return f"ID: {self.id}, Name: {self.name}, Frames: {self.frames}"
 
 
 """

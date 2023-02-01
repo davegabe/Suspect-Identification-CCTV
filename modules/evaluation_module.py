@@ -1,6 +1,8 @@
 import os
 
-def build_groundtruth(faces_path: str) -> dict[int, list[str]]:
+from modules.gallery_module import Identity
+
+def build_groundtruth(faces_path: str) -> dict[str, list[str]]:
     """
     Builds a dictionary of groundtruth faces.
 
@@ -10,7 +12,7 @@ def build_groundtruth(faces_path: str) -> dict[int, list[str]]:
     Returns:
         A dictionary of groundtruth faces.
     """
-    groundtruth: dict[int, list[str]] = {}
+    groundtruth: dict[str, list[str]] = {}
     # Get all the names of the people in the groundtruth faces
     names = os.listdir(faces_path)
     for name in names:
@@ -26,23 +28,46 @@ def build_groundtruth(faces_path: str) -> dict[int, list[str]]:
     # Return the groundtruth dictionary
     return groundtruth
 
-def evaluate_system(detected: dict[str, list[str]]):
+def list_to_dict_identities(identities: list[Identity]) -> dict[str, list[str]]:
+    """
+    Converts a list of identities to a dictionary of identities.
+    
+    Args:
+        identities: List of identities.
+
+    Returns:
+        Dictionary of frame number and identity.
+    """
+    # Initialize the dictionary
+    identities_dict: dict[str, list[str]] = {}
+    # For each identity, add the frame number and the identity to the dictionary
+    for identity in identities:
+        # For each frame, add the identity to the dictionary
+        for frame in identity.frames:
+            identities_dict[frame] = identities_dict.get(frame, []) + [identity.name]
+    # Return the dictionary
+    return identities_dict
+
+def evaluate_system(known_identities: list[Identity], groundtruth_faces_path: str):
     """
     Evaluates the system.
 
     Args:
-        detected: Dictionary of detected faces.
+        detected: List of detected identities.
+        groundtruth_faces_path: Path to the groundtruth faces.
     """
     # Get the groundtruth faces
-    groundtruth = build_groundtruth("groundtruth_faces")
+    groundtruth = build_groundtruth(groundtruth_faces_path)
+    # Create detected dict
+    detected = list_to_dict_identities(known_identities)
     # Get the frames where the system detected faces
     detected_frames = detected.keys()
     # Get the frames where the system didn't detect faces
     not_detected_frames = set(groundtruth.keys()) - set(detected_frames)
     # Get the frames where the system detected faces but didn't detect the correct person
     incorrect_frames = set()
-    false_positives: dict[int, list[str]] = {}
-    false_negatives: dict[int, list[str]] = {}
+    false_positives: dict[str, list[str]] = {}
+    false_negatives: dict[str, list[str]] = {}
     for frame in detected_frames:
         intesection = set(detected[frame]) & set(groundtruth[frame])
         # If the intersection is same length as the groundtruth, then the system detected the correct person

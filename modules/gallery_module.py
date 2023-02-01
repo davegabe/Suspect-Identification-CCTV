@@ -3,7 +3,7 @@ import numpy as np
 import cv2
 
 from insight_utilities.insight_interface import compareTwoFaces, get_face, get_faces
-
+from config import MAX_MISSING_FRAMES, NUMBER_OF_LAST_FACES, MATCH_MODALITY
 
 def build_gallery(other_environment: str, scenario_camera: str, max_size=100):
     """
@@ -87,7 +87,7 @@ class Identity:
     """
     last_id: int = 0
 
-    def __init__(self, max_missing_frames: int = 10):
+    def __init__(self):
         self.id: int = last_id  # temporary id
         self.final_id: str = ""  # definitive id, empty if the identity is not definitive
         # bounding boxes of the faces in the frame
@@ -99,7 +99,7 @@ class Identity:
         self.faces: list[np.ndarray] = []
         self.missing_frames: int = 0  # number of frames where the face is not present
         # maximum number of frames where the face can be missing
-        self.max_missing_frames: int = max_missing_frames
+        self.max_missing_frames: int = MAX_MISSING_FRAMES
         # Increment the last id
         last_id += 1
 
@@ -130,13 +130,22 @@ class Identity:
         # Add the features to the list of features
         self.faces.append(face_features)
 
-    def check_if_identity_matches(self, face):
+    def match(self, face: np.ndarray):
+        assert MATCH_MODALITY in ["mean", "max"]
+        sim = 0
+
+        if MATCH_MODALITY == "mean":
+            for face_feature in self.faces[:-NUMBER_OF_LAST_FACES]:
+                temp_sim, _ = compareTwoFaces(face, face_feature)
+                sim += temp_sim
+            sim /= NUMBER_OF_LAST_FACES
+        elif MATCH_MODALITY == "max":
+            for face_feature in self.faces[:-NUMBER_OF_LAST_FACES]:
+                    temp_sim, _ = compareTwoFaces(face, face_feature)
+                    sim = max(sim, temp_sim)
         # this method is going to be used to check if the face is the same as the one saved in self.faces
-        for face_feature in self.faces[:-5]:
-            _, is_same = compareTwoFaces(face, face_feature)
-            if is_same == 1:
-                return True
-        return False
+        
+        return sim
 
 
 """

@@ -1,7 +1,7 @@
 from modules.gallery_module import Identity
 
 
-def decide_identities(known_identities: list[Identity], unknown_identities: list[Identity]):
+def decide_identities(unknown_identities: list[Identity], known_identities: list[Identity], gallery: list[Identity]):
     """
     Decide the identities of the unknown identities based on the known identities.
 

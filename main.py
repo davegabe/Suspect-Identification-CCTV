@@ -4,8 +4,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 from insight_utilities.insight_interface import get_faces
 
-from modules.gallery_module import Identity, build_gallery, check_identity, Identity
+from modules.gallery_module import Identity, build_gallery, Identity
+from modules.decision_module import decide_identities
 from dataset.dataset import protocols
+from config import UNKNOWN_SIMILARITY_THRESHOLD
+
 
 def draw(identities, bboxes, kpss, camera_img, frame, num_cam):
     for i, identity in enumerate(identities):
@@ -28,18 +31,38 @@ def draw(identities, bboxes, kpss, camera_img, frame, num_cam):
         plt.imsave('results/' + f"_{num_cam}_" + frame + ".png", camera_img)
         plt.close()
 
-def handle_frame(camera_images: list[np.ndarray], gallery: dict, frame: str):
-    unknown_identities: list[Identity] = []
-    known_identities: list[Identity] = []
-    # For each camera 
+def handle_frame(camera_images: list[np.ndarray], gallery: dict, unknown_identities: list[Identity], known_identities: list[Identity]):
+    found_identities: list[Identity] = [] # identities which have been found in the current frame
+    # For each camera image
     for num_cam, camera_img in enumerate(camera_images):
-        # Extract faces from the frame
+        # Extract faces from the image
         faces, bboxes, kpss = get_faces(camera_img)
         # For each face in the frame, get the unknown identity
         for face, bbox, kps in zip(faces, bboxes, kpss):
-            # Compare the frame with the gallery
-            # identities, bboxes, kpss = check_identity(gallery, camera_img)
-            pass
+            # We have to check if the face is similar to an unknown identity
+            similarity = [identity.match(face) for identity in unknown_identities]
+            max_similarity = max(similarity)
+            if max_similarity > UNKNOWN_SIMILARITY_THRESHOLD:
+                # Get the index of the identity with the max similarity
+                index = similarity.index(max_similarity)
+                # Get the identity with the max similarity
+                identity = unknown_identities[index]
+                # Add the frame to the identity
+                identity.add_frame(face, bbox, kps)
+                # Add the identity to the list of found identities
+                found_identities.append(identity)
+            else:
+                # Create a new identity
+                new_identity = Identity()
+                new_identity.add_frame(face, bbox, kps)
+                unknown_identities.append(new_identity)
+    # For each unknown identity, check if it has been found in the current frame
+    for unknown_identity in unknown_identities:
+        # If the identity has been found, add it to the known identities
+        if unknown_identity not in found_identities:
+            unknown_identity.max_missing_frames -= 1
+    # Decision module
+    decide_identities(unknown_identities, known_identities, gallery)
 
 def main():
     dataset_path = "data"
@@ -64,7 +87,6 @@ def main():
         # Load all frames
         frames = list(filter(lambda x: x.endswith(".jpg"), os.listdir(paths[0])))
         frames = sorted(frames)
-        detectedIdentities = dict()
         """"
         Per ogni frame e per ogni telecamera:
             faccio reIdentification
@@ -75,9 +97,11 @@ def main():
         Problema di cui tener conto: se ci sono piu facce unknown, rischiano di confondersi
         """
         # For each frame
+        unknown_identities: list[Identity] = [] # temporary identities which don't have a label yet
+        known_identities: list[Identity] = [] # permanent identities which have a label
         for frame in frames:
             camera_images: list[np.ndarray] = [cv2.imread(os.path.join(path, frame)) for path in paths]
-            handle_frame(camera_images, gallery, frame)
+            handle_frame(camera_images, gallery, unknown_identities, known_identities)
 
         # TODO: remove the following line to test all the environments
         break

@@ -7,6 +7,8 @@ import onnxruntime
 from insight_utilities.scrfd import SCRFD                 #face detection
 from insight_utilities.arcface_onnx import ArcFaceONNX    #face recognition
 
+from config import KNOWN_THRESHOLD
+
 onnxruntime.set_default_logger_severity(3)
 
 assets_dir = osp.expanduser('~/.insightface/models/buffalo_l')
@@ -57,7 +59,7 @@ def compareTwoFaces(feat1, feat2):
     if the rapid conclusion is -2.0, it means that no face was detected in the second image.
     """
     sim = rec.compute_sim(feat1, feat2)     #this is a similarity score
-    if sim<0.2:
+    if sim<KNOWN_THRESHOLD:
         rapid_conclusion = 0
     elif sim>=0.2 and sim<0.28:
         rapid_conclusion = 0.5

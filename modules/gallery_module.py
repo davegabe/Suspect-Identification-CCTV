@@ -3,7 +3,7 @@ import numpy as np
 import cv2
 
 from insight_utilities.insight_interface import compareTwoFaces, get_face
-from config import MAX_MISSING_FRAMES, NUM_BEST_FACES, NUMBER_OF_LAST_FACES, MATCH_MODALITY, MAX_GALLERY_SIZE
+from config import GALLERY_THRESHOLD, MAX_MISSING_FRAMES, NUM_BEST_FACES, NUMBER_OF_LAST_FACES, MATCH_MODALITY, MAX_GALLERY_SIZE
 
 
 def build_gallery(other_environment: str, scenario_camera: str):
@@ -75,7 +75,8 @@ def check_identity(gallery: dict, faces: list[np.ndarray]) -> dict[str, int]:
                     best_sim = sim
                     best_name = subject
         # So we have the best name for the face
-        names[best_name] = names.get(best_name, 0) + 1
+        if best_sim > GALLERY_THRESHOLD:
+            names[best_name] = names.get(best_name, 0) + 1
     # If the face is not in the gallery
     return names
 

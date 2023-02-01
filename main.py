@@ -44,7 +44,7 @@ def draw(identities: list[Identity], frames: list[str], paths: list[str]):
 
                         cv2.rectangle(camera_img, (x1, y1), (x2, y2), (255, 0, 0), 2)
                         # Print the identity reducing the size of the text to be minor than AA
-                        cv2.putText(camera_img, identity.name, (x1, y1), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
+                        cv2.putText(camera_img, f"{identity.name}, id:{identity.id}", (x1, y1), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
                 found = True
             # Save the image
             if found:
@@ -117,14 +117,14 @@ def main():
         unknown_identities: list[Identity] = [] # temporary identities which don't have a label yet
         known_identities: list[Identity] = [] # permanent identities which have a label
         print(paths)
-        frames_reduced = frames[130:int(len(frames)*0.3)]
+        frames_reduced = frames[130:int(len(frames)*0.2)]
         for frame in frames_reduced:
             print(f"Current frame: {frame}")
             camera_images: list[np.ndarray] = [cv2.imread(os.path.join(path, frame)) for path in paths]
             handle_frame(camera_images, gallery, unknown_identities, known_identities, frame)
         # Force last decision
         unknown_identities, known_identities = decide_identities(unknown_identities, known_identities, gallery, force=True)
-        print(len(known_identities), len(frames_reduced))
+        print("known: ", len(known_identities), "unknown: ", len(unknown_identities), "frames: ", len(frames_reduced))
         #print(known_identities, unknown_identities)
         # # Draw result images
         draw(known_identities + unknown_identities, frames_reduced, paths)

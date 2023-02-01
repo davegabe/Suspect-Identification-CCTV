@@ -65,28 +65,41 @@ def evaluate_system(known_identities: list[Identity], groundtruth_faces_path: st
     # Get the frames where the system didn't detect faces
     not_detected_frames = set(groundtruth.keys()) - set(detected_frames)
     extra_detected_frames = set(detected_frames) - set(groundtruth.keys())
+
     # Get the frames where the system detected faces but didn't detect the correct person
     incorrect_frames = set()
-    false_positives: dict[str, list[str]] = {}
-    false_negatives: dict[str, list[str]] = {}
+    true_positives: dict[str, list[str]] = {} # 
+    true_negatives: dict[str, list[str]] = {} # detected unknown faces (negative identification) which is uknown also in the groundtruth (so it's not in the gallery)
+    false_positives: dict[str, list[str]] = {} # detected known faces (positive identification) which isn't in the groundtruth
+    false_negatives: dict[str, list[str]] = {} #  
+    # For each frame where the system detected faces
     for frame in detected_frames:
+        # If the system detected faces but there were no faces in the groundtruth, then the system detected a false positive
         if groundtruth.get(frame) is None:
-            # TODO: false positive?
-            continue
-        intesection = set(detected[frame]).intersection(set(groundtruth[frame]))
-        # If the intersection is same length as the groundtruth, then the system detected the correct person
-        if len(intesection) != len(groundtruth[frame]):
             incorrect_frames.add(frame)
             # Calculate the false positives. The false positives are the faces that the system detected but are not in the groundtruth
-            false_positives[frame] = list(set(detected[frame]) - set(groundtruth[frame]))
-            # Calculate the false negatives. The false negatives are the faces that are in the groundtruth but the system didn't detect
-            false_negatives[frame] = list(set(groundtruth[frame]) - set(detected[frame]))
+            false_positives[frame] = detected[frame]
+        else:
+            # Calculate the intersection between the detected faces and the groundtruth faces
+            intesection = set(detected[frame]).intersection(set(groundtruth[frame]))
+            # Calculate the union between the detected faces and the groundtruth faces
+            union = set(detected[frame]).union(set(groundtruth[frame]))
+            # If the intersection is same length as the groundtruth, then the system detected the correct person
+            if len(intesection) != len(groundtruth[frame]): # if intersection is not equal to groundtruth, then we have a false negative (we missed someone)
+                incorrect_frames.add(frame)
+                # Calculate the false negatives. The false negatives are the faces that are in the groundtruth but the system didn't detect
+                false_negatives[frame] = list(set(groundtruth[frame]) - set(detected[frame]))
+                # true_negatives[frame] = list(set(detected[frame]) - set(groundtruth[frame]) - set(detected[frame]))
+            if len(union) != len(detected[frame]): # if union is not equal to detected, then we have a false positive (we detected someone who wasn't there)
+                incorrect_frames.add(frame)
+                # Calculate the false positives. The false positives are the faces that the system detected but are not in the groundtruth
+                false_positives[frame] = list(set(detected[frame]) - set(groundtruth[frame]))
+                
     # Get the frames where the system detected faces and detected the correct person
     correct_frames = set(detected_frames) - incorrect_frames
     # Calculate the precision
     precision = len(correct_frames) / len(detected_frames)
     # Calculate the recall
-    
     recall = len(correct_frames) / len(groundtruth.keys())
     # Calculate the F1 score
     f1_score = 2 * precision * recall / (precision + recall)

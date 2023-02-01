@@ -2,8 +2,9 @@ import os
 import numpy as np
 import cv2
 
-from insight_utilities.insight_interface import compareTwoFaces, get_face, get_faces
-from config import MAX_MISSING_FRAMES, NUMBER_OF_LAST_FACES, MATCH_MODALITY, MAX_GALLERY_SIZE
+from insight_utilities.insight_interface import compareTwoFaces, get_face
+from config import MAX_MISSING_FRAMES, NUM_BEST_FACES, NUMBER_OF_LAST_FACES, MATCH_MODALITY, MAX_GALLERY_SIZE
+
 
 def build_gallery(other_environment: str, scenario_camera: str):
     """
@@ -11,7 +12,7 @@ def build_gallery(other_environment: str, scenario_camera: str):
 
     Args:
         other_environment (str): The other environment path.
-        max_size (int, optional): The maximum size of the gallery. Defaults to 100.
+        scenario_camera (str): The scenario and the camera.
     """
     # Load the gallery from the other environment and pick a random camera for a random scenario
     other_environment += "_faces"
@@ -22,9 +23,11 @@ def build_gallery(other_environment: str, scenario_camera: str):
     gallery = {}
     # For each face in the gallery
     for face in faces:
+        # Path of the face
+        images = os.listdir(os.path.join(path, face))
         # Get all the .pgm images of the face
-        images = list(filter(lambda x: x.endswith(".pgm"),
-                      os.listdir(os.path.join(path, face))))[:MAX_GALLERY_SIZE]
+        images = list(filter(lambda x: x.endswith(".pgm"), images))[
+            :MAX_GALLERY_SIZE]
         # Create a list of images
         gallery[face] = []
         # For each image
@@ -52,8 +55,9 @@ def check_identity(gallery: dict, faces: list[np.ndarray]) -> dict[str, int]:
     Returns:
         dict(str, int): Dictionary with names of subjects and the number of occurrences inside faces (only if > 0).
     """
-    names: dict[str, int] = dict() # each entry is the number of occurrences of the corresponding name in faces
-    # For each face 
+    names: dict[str, int] = dict(
+    )  # each entry is the number of occurrences of the corresponding name in faces
+    # For each face
     for i, face in enumerate(faces):
         # Best name for the face
         best_name = ""
@@ -84,7 +88,8 @@ class Identity:
 
     def __init__(self):
         self.id: int = Identity.last_id  # temporary id
-        self.name: str = "Unknown"  # definitive name of the identity, empty if the identity is not definitive
+        # definitive name of the identity, empty if the identity is not definitive
+        self.name: str = "Unknown"
         # bounding boxes of the faces in the frame
         self.bboxes: list[np.ndarray] = []
         self.kps: list[np.ndarray] = []  # keypoints of the faces in the frame
@@ -92,6 +97,7 @@ class Identity:
         self.frames: list[str] = []
         # list of features of the faces in the frame. The faces are alrady cropped
         self.faces: list[np.ndarray] = []
+        self.last_faces: list[np.ndarray] = []
         self.missing_frames: int = 0  # number of frames where the face is not present
         # maximum number of frames where the face can be missing
         self.max_missing_frames: int = MAX_MISSING_FRAMES
@@ -124,48 +130,57 @@ class Identity:
         self.kps.append(kps)
         # Add the features to the list of features
         self.faces.append(face_features)
-        
+
+        self.last_faces.append(face_features)
         # If the list is too long, remove the oldest frame
-        if len(self.faces) > NUMBER_OF_LAST_FACES:
-            self.faces.pop(0)
+        if len(self.last_faces) > NUMBER_OF_LAST_FACES:
+            self.last_faces.pop(0)
 
     def match(self, face: np.ndarray):
         """
-        Check if the face is the same as the one saved in self.faces.
+        Check if the face is the same as the one saved in self.last_faces.
 
         Args:
             face (np.ndarray): The face to check.
 
         Returns:
-            float: The similarity between the face and the one saved in self.faces.
+            float: The similarity between the face and the one saved in self.last_faces.
         """
         sim: float = 0
 
         if MATCH_MODALITY == "mean":
-            for face_feature in self.faces:
+            for face_feature in self.last_faces:
                 temp_sim, _ = compareTwoFaces(face, face_feature)
                 sim += temp_sim
             sim /= NUMBER_OF_LAST_FACES
         elif MATCH_MODALITY == "max":
-            for face_feature in self.faces:
+            for face_feature in self.last_faces:
                 temp_sim, _ = compareTwoFaces(face, face_feature)
                 sim = max(sim, temp_sim)
-        # this method is going to be used to check if the face is the same as the one saved in self.faces
-        
+        # this method is going to be used to check if the face is the same as the one saved in self.last_faces
+
         return sim
-    
-    def __str__(self):
+
+    def get_biggest_faces(self):
+        """
+        Get the biggest faces in the identity.
+
+        Returns:
+            list[np.ndarray]: The biggest faces in the identity.
+        """
+        # Get the biggest faces
+        biggest_faces: list[np.ndarray] = []
+        bboxes_index: list[tuple[int, np.ndarray]] = enumerate(self.bboxes)
+        # Sort the bounding boxes by the area of the bounding box
+        biggest_bboxes: list[tuple[int, np.ndarray]] = sorted(
+            bboxes_index, key=lambda x: abs(x[1][0] - x[1][2]) * abs(x[1][1] - x[1][3]), reverse=True)
+        # Get the NUM_BEST_FACES biggest bounding boxes
+        biggest_bboxes = biggest_bboxes[:NUM_BEST_FACES]
+        # Get the faces corresponding to the biggest bounding boxes
+        for bbox in biggest_bboxes:
+            biggest_faces.append(self.faces[bbox[0]])
+        # Return the biggest faces
+        return biggest_faces
+
+    def __repr__(self):
         return f"ID: {self.id}, Name: {self.name}, Frames: {self.frames}"
-
-
-"""
-temp_identities = {
-    "identity_temp": {
-        "frames": [frame1, frame2, frame3,  ...],     # each element of this (and also the following) list is a list of results for each camera (list of 3 elements)
-        "bboxes": [bbox1, bbox2, bbox3, ...],
-        "kpss": [kps1, kps2, kps3, ...],
-        "features": [feature1, feature2, feature3, ...]
-        "is_in_scene": True  # this will be False when the person disappears from the scene, at this point the decision module will do stuff and replace the temporary identity with a definitive one
-    }
-}
-"""

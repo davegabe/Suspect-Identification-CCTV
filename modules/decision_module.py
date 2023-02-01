@@ -20,7 +20,7 @@ def decide_identities(unknown_identities: list[Identity], known_identities: list
         # Check if it's not in scene
         if not unknown_identity.is_in_scene() or force:
             # We have to check if the face is similar to an unknown identity
-            unknown_selected_faces: list[np.ndarray] = unknown_identity.faces[:5] + unknown_identity.faces[-5:] # Select the first and last 5 frames (so we should have a clear face and no occlusions)
+            unknown_selected_faces: list[np.ndarray] = unknown_identity.get_biggest_faces()
             names_selected_faces: dict[str, int] = check_identity(gallery,unknown_selected_faces)
             # We get the name with the most occurences
             name = max(names_selected_faces, key=names_selected_faces.get)  #TODO: da ricontrollare copilot :)

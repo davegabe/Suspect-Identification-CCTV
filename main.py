@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from insight_utilities.insight_interface import get_faces
 
-from modules.evaluation_module import build_groundtruth, evaluate_system
+from modules.evaluation_module import evaluate_system
 from modules.gallery_module import Identity, build_gallery, Identity
 from modules.decision_module import decide_identities
 from dataset.dataset import protocols
@@ -117,7 +117,7 @@ def main():
         unknown_identities: list[Identity] = [] # temporary identities which don't have a label yet
         known_identities: list[Identity] = [] # permanent identities which have a label
         print(paths)
-        frames_reduced = frames[130:int(len(frames))]
+        frames_reduced = frames[130:int(len(frames)*0.3)]
         for frame in frames_reduced:
             print(f"Current frame: {frame}")
             camera_images: list[np.ndarray] = [cv2.imread(os.path.join(path, frame)) for path in paths]
@@ -125,7 +125,7 @@ def main():
         # Force last decision
         unknown_identities, known_identities = decide_identities(unknown_identities, known_identities, gallery, force=True)
         print(len(known_identities), len(frames_reduced))
-        print(known_identities, unknown_identities)
+        #print(known_identities, unknown_identities)
         # # Draw result images
         draw(known_identities + unknown_identities, frames_reduced, paths)
         # Evaluate the results

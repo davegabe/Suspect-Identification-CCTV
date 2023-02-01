@@ -69,7 +69,10 @@ def evaluate_system(known_identities: list[Identity], groundtruth_faces_path: st
     false_positives: dict[str, list[str]] = {}
     false_negatives: dict[str, list[str]] = {}
     for frame in detected_frames:
-        intesection = set(detected[frame]) & set(groundtruth[frame])
+        if groundtruth.get(frame) is None:
+            # TODO: false positive?
+            continue
+        intesection = set(detected[frame]).intersection(set(groundtruth[frame]))
         # If the intersection is same length as the groundtruth, then the system detected the correct person
         if len(intesection) != len(groundtruth[frame]):
             incorrect_frames.add(frame)
@@ -82,6 +85,7 @@ def evaluate_system(known_identities: list[Identity], groundtruth_faces_path: st
     # Calculate the precision
     precision = len(correct_frames) / len(detected_frames)
     # Calculate the recall
+    
     recall = len(correct_frames) / len(groundtruth.keys())
     # Calculate the F1 score
     f1_score = 2 * precision * recall / (precision + recall)

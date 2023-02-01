@@ -4,15 +4,16 @@ import matplotlib.pyplot as plt
 import numpy as np
 from insight_utilities.insight_interface import get_faces
 
+from modules.evaluation_module import build_groundtruth, evaluate_system
 from modules.gallery_module import Identity, build_gallery, Identity
 from modules.decision_module import decide_identities
 from dataset.dataset import protocols
-from config import UNKNOWN_SIMILARITY_THRESHOLD
+from config import UNKNOWN_SIMILARITY_THRESHOLD, MAX_CAMERAS
 
 
-def draw(identities, bboxes, kpss, camera_img, frame, num_cam):
+def draw(identities: list[Identity], bboxes: list[np.ndarray], kpss: list[np.ndarray], camera_img: np.ndarray, frame: str, num_cam: int):
     for i, identity in enumerate(identities):
-        print("In frame " + frame + " the identity is " + identity)
+        print("In frame " + frame + " the identity is " + identity.name)
         # Draw the bouding box in plt
         x1 = int(bboxes[i][0])
         y1 = int(bboxes[i][1])
@@ -24,14 +25,14 @@ def draw(identities, bboxes, kpss, camera_img, frame, num_cam):
 
         cv2.rectangle(camera_img, (x1, y1), (x2, y2), (255, 0, 0), 2)
         # Print the identity reducing the size of the text to be minor than AA
-        cv2.putText(camera_img, identity, (x1, y1), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
+        cv2.putText(camera_img, identity.name, (x1, y1), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
         # Save the image
         plt.imshow(camera_img)
-        plt.title("Identity: " + identity)
+        plt.title("Identity: " + identity.name)
         plt.imsave('results/' + f"_{num_cam}_" + frame + ".png", camera_img)
         plt.close()
 
-def handle_frame(camera_images: list[np.ndarray], gallery: dict, unknown_identities: list[Identity], known_identities: list[Identity]):
+def handle_frame(camera_images: list[np.ndarray], gallery: dict, unknown_identities: list[Identity], known_identities: list[Identity], frame: str):
     found_identities: list[Identity] = [] # identities which have been found in the current frame
     # For each camera image
     for num_cam, camera_img in enumerate(camera_images):
@@ -41,20 +42,20 @@ def handle_frame(camera_images: list[np.ndarray], gallery: dict, unknown_identit
         for face, bbox, kps in zip(faces, bboxes, kpss):
             # We have to check if the face is similar to an unknown identity
             similarity = [identity.match(face) for identity in unknown_identities]
-            max_similarity = max(similarity)
+            max_similarity = max(similarity + [0])
             if max_similarity > UNKNOWN_SIMILARITY_THRESHOLD:
                 # Get the index of the identity with the max similarity
                 index = similarity.index(max_similarity)
                 # Get the identity with the max similarity
                 identity = unknown_identities[index]
                 # Add the frame to the identity
-                identity.add_frame(face, bbox, kps)
+                identity.add_frame(face, bbox, kps, frame)
                 # Add the identity to the list of found identities
                 found_identities.append(identity)
             else:
                 # Create a new identity
                 new_identity = Identity()
-                new_identity.add_frame(face, bbox, kps)
+                new_identity.add_frame(face, bbox, kps, frame)
                 unknown_identities.append(new_identity)
     # For each unknown identity, check if it has been found in the current frame
     for unknown_identity in unknown_identities:
@@ -62,7 +63,9 @@ def handle_frame(camera_images: list[np.ndarray], gallery: dict, unknown_identit
         if unknown_identity not in found_identities:
             unknown_identity.max_missing_frames -= 1
     # Decision module
-    decide_identities(unknown_identities, known_identities, gallery)
+    unknown_identities, known_identities = decide_identities(unknown_identities, known_identities, gallery)
+    # # Draw the results
+    # draw(known_identities, bboxes, kpss, camera_img, frame, num_cam)
 
 def main():
     dataset_path = "data"
@@ -70,39 +73,39 @@ def main():
         # Get an arbitrary scenario
         scenario = protocols[environment][0]
         # Get the max_cameras cameras
-        max_cameras = 3
-        cameras = ["C" + str(i) for i in range(1, max_cameras)]
+        cameras = ["C" + str(i) for i in range(1, MAX_CAMERAS+1)]
         # Get the paths for each camera
         paths = [os.path.join("data", environment, f"{environment}_{scenario}_{camera}") for camera in cameras]
-        print(f"Current environment: {environment} using {str(max_cameras)} cameras")
+        print(f"Current environment: {environment} on scenario {scenario} using {str(MAX_CAMERAS)} cameras")
         # Get the other environments
         other_environments = list(filter(lambda x: x != environment, protocols.keys()))
         # Get an arbitrary environment for the gallery
         environment_for_gallery = other_environments[0]
         # Get an arbitrary scenario for the gallery
         scenario_for_gallery = protocols[environment_for_gallery][0]
+
         # Build the gallery
+        print("Building the gallery...")
         gallery_path = os.path.join(dataset_path, environment_for_gallery)
-        gallery = build_gallery(gallery_path, f"{environment_for_gallery}_{scenario_for_gallery}_C1", max_size=15)
+        gallery = build_gallery(gallery_path, f"{environment_for_gallery}_{scenario_for_gallery}_C1")
+
         # Load all frames
+        print("Loading frames...")
         frames = list(filter(lambda x: x.endswith(".jpg"), os.listdir(paths[0])))
         frames = sorted(frames)
-        """"
-        Per ogni frame e per ogni telecamera:
-            faccio reIdentification
-            Così mi trovo in primis il suo ID temporanei
-            Lavorerò con dei ID temporanei fino alla fine della esecuzione. 
-        Una volta finito, cercherò dei ID che possono essere match e poi salverò i risultati
 
-        Problema di cui tener conto: se ci sono piu facce unknown, rischiano di confondersi
-        """
         # For each frame
         unknown_identities: list[Identity] = [] # temporary identities which don't have a label yet
         known_identities: list[Identity] = [] # permanent identities which have a label
-        for frame in frames:
+        print(paths)
+        for frame in frames[int(len(frames)*0.8):]:
+            print(f"Current frame: {frame}")
             camera_images: list[np.ndarray] = [cv2.imread(os.path.join(path, frame)) for path in paths]
-            handle_frame(camera_images, gallery, unknown_identities, known_identities)
-
+            handle_frame(camera_images, gallery, unknown_identities, known_identities, frame)
+        
+        # Evaluate the results
+        print(f"Evaluation for {environment} using {str(MAX_CAMERAS)} cameras")
+        evaluate_system(known_identities, os.path.join(dataset_path, f"{environment}_faces"))
         # TODO: remove the following line to test all the environments
         break
         

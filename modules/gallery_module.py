@@ -84,11 +84,11 @@ class Identity:
 
     def __init__(self):
         self.id: int = Identity.last_id  # temporary id
-        self.name: str = ""  # definitive name of the identity, empty if the identity is not definitive
+        self.name: str = "Unknown"  # definitive name of the identity, empty if the identity is not definitive
         # bounding boxes of the faces in the frame
         self.bboxes: list[np.ndarray] = []
         self.kps: list[np.ndarray] = []  # keypoints of the faces in the frame
-        # list of paths to the frames where the face is present
+        # list of paths to the frames where the face is present, format: cam_frame
         self.frames: list[str] = []
         # list of features of the faces in the frame. The faces are alrady cropped
         self.faces: list[np.ndarray] = []
@@ -124,20 +124,32 @@ class Identity:
         self.kps.append(kps)
         # Add the features to the list of features
         self.faces.append(face_features)
+        
+        # If the list is too long, remove the oldest frame
+        if len(self.faces) > NUMBER_OF_LAST_FACES:
+            self.faces.pop(0)
 
     def match(self, face: np.ndarray):
-        assert MATCH_MODALITY in ["mean", "max"]
-        sim = 0
+        """
+        Check if the face is the same as the one saved in self.faces.
+
+        Args:
+            face (np.ndarray): The face to check.
+
+        Returns:
+            float: The similarity between the face and the one saved in self.faces.
+        """
+        sim: float = 0
 
         if MATCH_MODALITY == "mean":
-            for face_feature in self.faces[:-NUMBER_OF_LAST_FACES]:
+            for face_feature in self.faces:
                 temp_sim, _ = compareTwoFaces(face, face_feature)
                 sim += temp_sim
             sim /= NUMBER_OF_LAST_FACES
         elif MATCH_MODALITY == "max":
-            for face_feature in self.faces[:-NUMBER_OF_LAST_FACES]:
-                    temp_sim, _ = compareTwoFaces(face, face_feature)
-                    sim = max(sim, temp_sim)
+            for face_feature in self.faces:
+                temp_sim, _ = compareTwoFaces(face, face_feature)
+                sim = max(sim, temp_sim)
         # this method is going to be used to check if the face is the same as the one saved in self.faces
         
         return sim

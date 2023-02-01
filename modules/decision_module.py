@@ -3,7 +3,7 @@ import numpy as np
 from modules.gallery_module import Identity, check_identity
 
 
-def decide_identities(unknown_identities: list[Identity], known_identities: list[Identity], gallery: list[Identity]):
+def decide_identities(unknown_identities: list[Identity], known_identities: list[Identity], gallery: list[Identity], force: bool = False) -> tuple[list[Identity], list[Identity]]:
     """
     Decide the identities of the unknown identities based on the known identities.
 
@@ -18,7 +18,7 @@ def decide_identities(unknown_identities: list[Identity], known_identities: list
     # For each unknown identity, check if it's in scene
     for unknown_identity in unknown_identities:
         # Check if it's not in scene
-        if not unknown_identity.is_in_scene():
+        if not unknown_identity.is_in_scene() or force:
             # We have to check if the face is similar to an unknown identity
             unknown_selected_faces: list[np.ndarray] = unknown_identity.faces[:5] + unknown_identity.faces[-5:] # Select the first and last 5 frames (so we should have a clear face and no occlusions)
             names_selected_faces: dict[str, int] = check_identity(gallery,unknown_selected_faces)
@@ -32,7 +32,7 @@ def decide_identities(unknown_identities: list[Identity], known_identities: list
     # We can finally remove the unknown identities from the list
     for unknown_identity in unknown_identities:
         # Check if it's not in scene
-        if not unknown_identity.is_in_scene():
+        if not unknown_identity.is_in_scene() or force:
             # We remove the unknown identity from the list
             unknown_identities.remove(unknown_identity)
     return unknown_identities, known_identities

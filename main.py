@@ -4,23 +4,22 @@ import matplotlib.pyplot as plt
 import numpy as np
 from insight_utilities.insight_interface import get_faces
 
+from modules.drawing_module import GUI
 from modules.evaluation_module import evaluate_system
 from modules.gallery_module import Identity, build_gallery, Identity
 from modules.decision_module import decide_identities
 from dataset.dataset import protocols
 from config import UNKNOWN_SIMILARITY_THRESHOLD, MAX_CAMERAS
 
-"""
-for each frame
-        for each identity  
-            see if frame is inside identity
-                if yes
-                    draw bbox and name
-                if no
-                    continue
-"""
-
 def draw(identities: list[Identity], frames: list[str], paths: list[str]):
+    """
+    This function draws the identities in the frames with the name and the bbox.
+
+    Args:
+        identities (list[Identity]): The identities
+        frames (list[str]): The frames
+        paths (list[str]): The paths of the cameras
+    """
     # For each frame
     for frame in frames:
         camera_images: list[np.ndarray] = [cv2.imread(os.path.join(path, frame)) for path in paths]
@@ -54,6 +53,15 @@ def draw(identities: list[Identity], frames: list[str], paths: list[str]):
 
 
 def handle_frame(camera_images: list[np.ndarray], gallery: dict, unknown_identities: list[Identity], known_identities: list[Identity], frame: str):
+    """
+    This function handles a frame, extracting the faces, matching them with the identities and updating the identities.
+
+    Args:
+        camera_images (list[np.ndarray]): The images of the cameras
+        gallery (dict): The gallery
+        unknown_identities (list[Identity]): The unknown identities
+        known_identities (list[Identity]): The known identities
+    """
     found_identities: list[Identity] = [] # identities which have been found in the current frame
     # For each camera image
     for num_cam, camera_img in enumerate(camera_images):
@@ -108,20 +116,23 @@ def main():
         gallery_path = os.path.join(dataset_path, environment_for_gallery)
         gallery = build_gallery(gallery_path, f"{environment_for_gallery}_{scenario_for_gallery}_C1")
 
+        # Initialize the identities
+        unknown_identities: list[Identity] = [] # temporary identities which don't have a label yet
+        known_identities: list[Identity] = [] # permanent identities which have a label
+
         # Load all frames
         print("Loading frames...")
         frames = list(filter(lambda x: x.endswith(".jpg"), os.listdir(paths[0])))
         frames = sorted(frames)
-
-        # For each frame
-        unknown_identities: list[Identity] = [] # temporary identities which don't have a label yet
-        known_identities: list[Identity] = [] # permanent identities which have a label
-        print(paths)
         frames_reduced = frames[130:int(len(frames)*0.2)]
-        for frame in frames_reduced:
+        all_camera_images = [[cv2.imread(os.path.join(path, frame)) for path in paths] for frame in frames_reduced]
+
+        # Launch the GUI
+        GUI(known_identities, all_camera_images).start()
+
+        for i, frame in enumerate(frames_reduced):
             print(f"Current frame: {frame}")
-            camera_images: list[np.ndarray] = [cv2.imread(os.path.join(path, frame)) for path in paths]
-            handle_frame(camera_images, gallery, unknown_identities, known_identities, frame)
+            handle_frame(all_camera_images[i], gallery, unknown_identities, known_identities, frame)
         # Force last decision
         unknown_identities, known_identities = decide_identities(unknown_identities, known_identities, gallery, force=True)
         print("known: ", len(known_identities), "unknown: ", len(unknown_identities), "frames: ", len(frames_reduced))
@@ -137,41 +148,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-
-"""
-Tracciare continuamente una persona con una label temporanea, fregandoci di chi è effetivamente.  L'intuizione è che una persona verosimilmente non si
-può teletrasportare quindi i frame successivi a quello in cui è stata identificata, avranno una similarità quasi identica a quello precedente.
-Per alleggerire il calcolo, si può usare una funzione di similarità che sfrutta solo gli ultimi X frames
-Quando la persona scompare dalla scena, la label temporanea viene sostituita con una label definitiva (che viene assegnata a tutti i frame precedenti).
-"""
-
-"""
-
-temp_identities = {
-    "identity_temp": {
-        "frames": [[frame1, frame2, frame3], [frame2...], [frame3...],  ...],     # each element of this (and also the following) list is a list of results for each camera (list of 3 elements)
-        "bboxes": [bbox1, bbox2, bbox3, ...],
-        "kpss": [kps1, kps2, kps3, ...],
-        "features": [feature1, feature2, feature3, ...]
-        "is_in_scene": True  # this will be False when the person disappears from the scene, at this point the decision module will do stuff and replace the temporary identity with a definitive one
-    }
-}
-
-for frame in frames:
-    for camera in cameras:
-        # for each face, i check if this face is in temp_identities
-            # if it is, i update the temp_identity (add the frame, the bboxes, the kpss, the features)
-            # if it is not, i create a new temp_identity
-    # at the end of the loop, if there is a face in temp_identities (maybe we have to wait for more than 1 frame where the face is not present) that is not in the current frame, i set is_in_scene to False
-    # decision module will check if there are not is_in_scene temp_identities and will decide what their permanent identity is (removing them from temp_identities and putting somewhere else)
-    # printing the results somehow
-
-
-
-for key in temp_identities.keys():
-    for frame in dict[key]["frames"]:
-        #detecta faccia
-        #vedi quale è la più simile
-"""

@@ -1,13 +1,9 @@
 import os
 import os.path as osp
-import argparse
-import cv2
 import numpy as np
 import onnxruntime
 from insight_utilities.scrfd import SCRFD                 #face detection
 from insight_utilities.arcface_onnx import ArcFaceONNX    #face recognition
-
-from config import GALLERY_THRESHOLD
 
 onnxruntime.set_default_logger_severity(3)
 
@@ -19,9 +15,17 @@ model_path = os.path.join(assets_dir, 'w600k_r50.onnx')
 rec = ArcFaceONNX(model_path)
 rec.prepare(0)
 
-def get_faces(img):
+def get_faces(img: np.ndarray) -> tuple[list[np.ndarray], np.ndarray, np.ndarray]:
     """
     Returns the faces from the image.
+
+    Args:
+        img (numpy.ndarray): An image.
+
+    Returns:
+        list[numpy.ndarray]: A list of faces.
+        numpy.ndarray: A list of bounding boxes.
+        numpy.ndarray: A list of keypoints.
     """
     bboxes, kpss = detector.autodetect(img)
     if bboxes.shape[0]==0:
@@ -33,10 +37,17 @@ def get_faces(img):
         faces.append(face)
     return faces, bboxes, kpss
 
-def get_face(img):
+def get_face(img: np.ndarray) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
-    input: an image
-    output: a cropped image of the face in the image
+    Returns the face from the image.
+
+    Args:
+        img (numpy.ndarray): An image.
+
+    Returns:
+        numpy.ndarray: A face.
+        numpy.ndarray: A bounding box.
+        numpy.ndarray: A keypoints.
     """
     bboxes, kpss = detector.autodetect(img, max_num=1)
     if bboxes.shape[0]==0:
@@ -46,25 +57,17 @@ def get_face(img):
     return face, bboxes, kps
 
 
-def compareTwoFaces(feat1, feat2): 
+def compareTwoFaces(feat1: np.ndarray, feat2: np.ndarray) -> float:
     """
-    input: two images of faces. Note: this is not path but rather to the already read image.
-    #img1 is the frame while img2 is the face from the database.
+    Compares two faces and returns a similarity score.
 
-    output: a similarity score and a rapid conclusion, bounding boxes and keypoints of the probe image.
-    if the similarity score is less than 0.2, the rapid conclusion is 0.
-    if the similarity score is between 0.2 and 0.28, the rapid conclusion is 0.5.
-    if the similarity score is greater than 0.28, the rapid conclusion is 1.
-    if the rapid conclusion is -1.0, it means that no face was detected in the first image.
-    if the rapid conclusion is -2.0, it means that no face was detected in the second image.
+    Args:
+        feat1 (numpy.ndarray): A face feature vector.
+        feat2 (numpy.ndarray): A face feature vector.
+
+    Returns:
+        float: A similarity score.
     """
     sim = rec.compute_sim(feat1, feat2)     #this is a similarity score
-    if sim<GALLERY_THRESHOLD:
-        rapid_conclusion = 0
-    elif sim>=0.2 and sim<0.28:
-        rapid_conclusion = 0.5
-    else:
-        rapid_conclusion = 1
-    #also return the bounding boxes and keypoints of the probe image
-    return sim, rapid_conclusion
+    return sim
     

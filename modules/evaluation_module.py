@@ -53,7 +53,8 @@ def evaluate_system(known_identities: list[Identity], unknown_identities: list[I
     Evaluates the system.
 
     Args:
-        detected: List of detected identities.
+        known_identities: List of known identities.
+        unknown_identities: List of unknown identities.
         groundtruth_faces_path: Path to the groundtruth faces.
     """
     # Get the groundtruth faces
@@ -122,10 +123,49 @@ def evaluate_system(known_identities: list[Identity], unknown_identities: list[I
     # Calculate the F1 score
     f1_score = 2 * precision * recall / (precision + recall)
     # Print the results
+
+    #false acceptance rate = false positives / (false positives + true negatives)
+    #false rejection rate = false negatives / (false negatives + true positives)
+    #false acceptance rate = false positives / (false positives + true negatives)
+    #false rejection rate = false negatives / (false negatives + true positives)
+
+    #ROC
+
+
+    """
+    Precision:  True positive / (True positive + False positive)
+    Recall: True positive / (True positive + False negative)
+    F1 score: 2 * Precision * Recall / (Precision + Recall)
+    
+    FRR: False negative / (False negative + True positive)
+    FAR: False positive / (False positive + True negative)
+
+    CMS(at rank k): True positive / (True positive + False positive + False negative)       #probability of correct match at rank k
+    CMC: cumulative match characteristic
+
+    EER(t): equal error rate at threshold t = {x: FRR(t)=x and FAR(t)=x }
+
+    ROC and DET: Receiver Operating Characteristic and Detection Error Tradeoff    
+    
+    
+    """
+
+    FP = len([y for sublist in false_positives.values() for y in sublist])
+    FN = len([y for sublist in false_negatives.values() for y in sublist])
+    TP = len([y for sublist in true_positives.values() for y in sublist])
+    TN = len([y for sublist in true_negatives.values() for y in sublist])
+
+    FRR = FN / (FN + TP)
+    FAR = FP / (FP + TN)
+    CMS = TP / (TP + FP + FN) # at rank 1
+
     print("Precision: ", precision)
     print("Recall: ", recall)
     print("F1 score: ", f1_score)
-    print("False positives: ", len(false_positives))
-    print("False negatives: ", len(false_negatives))
+    print(f"False positives: {FP}, False negatives: {FN}")
+    print(f"True positives: {TP}, True negatives: {TN}")
+    print(f"False acceptance rate: {FAR}, False rejection rate: {FRR}")
+    print(f"CMS: {CMS}")
+    print("Incorrect frames: ", len(incorrect_frames))
     print("Not detected frames: ", len(not_detected_frames))
 

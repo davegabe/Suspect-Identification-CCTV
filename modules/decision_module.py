@@ -10,6 +10,8 @@ def decide_identities(unknown_identities: list[Identity], known_identities: list
     Args:
         unknown_identities (list): List of unknown identities.
         known_identities (list): List of known identities.
+        gallery (list): List of identities in the gallery.
+        force (bool, optional): Force the decision. Defaults to False.
 
     Returns:
         unknown_identities (list): List of updated unknown identities.

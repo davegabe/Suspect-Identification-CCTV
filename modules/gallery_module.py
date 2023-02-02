@@ -68,7 +68,7 @@ def check_identity(gallery: dict, faces: list[np.ndarray]) -> dict[str, int]:
             # For each face of the subject
             for face_feature in gallery[subject]:
                 # Compare the face with the face in the gallery
-                sim, _ = compareTwoFaces(face, face_feature)
+                sim = compareTwoFaces(face, face_feature)
                 # If the faces "are the same"
                 if sim > best_sim:
                     # Update the best similarity and the best name
@@ -87,10 +87,10 @@ class Identity:
     """
     last_id: int = 0
 
-    def __init__(self):
+    def __init__(self, name: str = "Unknown"):
         self.id: int = Identity.last_id  # temporary id
         # definitive name of the identity, empty if the identity is not definitive
-        self.name: str = "Unknown"
+        self.name: str = name
         # bounding boxes of the faces in the frame
         self.bboxes: list[np.ndarray] = []
         self.kps: list[np.ndarray] = []  # keypoints of the faces in the frame
@@ -151,12 +151,12 @@ class Identity:
 
         if MATCH_MODALITY == "mean":
             for face_feature in self.last_faces:
-                temp_sim, _ = compareTwoFaces(face, face_feature)
+                temp_sim = compareTwoFaces(face, face_feature)
                 sim += temp_sim
             sim /= NUMBER_OF_LAST_FACES
         elif MATCH_MODALITY == "max":
             for face_feature in self.last_faces:
-                temp_sim, _ = compareTwoFaces(face, face_feature)
+                temp_sim = compareTwoFaces(face, face_feature)
                 sim = max(sim, temp_sim)
         # this method is going to be used to check if the face is the same as the one saved in self.last_faces
 

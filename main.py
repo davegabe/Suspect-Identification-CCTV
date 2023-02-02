@@ -1,3 +1,4 @@
+from multiprocessing import Queue
 import os
 import cv2
 import matplotlib.pyplot as plt
@@ -51,8 +52,28 @@ def draw(identities: list[Identity], frames: list[str], paths: list[str]):
                 plt.imsave('results/' + f"_{num_cam}_" + frame + ".png", camera_img)
                 plt.close()
 
+def handle_gui_communication(all_camera_images: list[list[np.ndarray]], unknown_identities: list[Identity], known_identities: list[Identity], requests_queue: Queue, responses_queue: Queue):
+    """
+    This function handles the communication between the GUI and the main thread.
 
-def handle_frame(camera_images: list[np.ndarray], gallery: dict, unknown_identities: list[Identity], known_identities: list[Identity], frame: str):
+    Args:
+        all_camera_images (list[list[np.ndarray]]): The images of the cameras
+        unknown_identities (list[Identity]): The unknown identities
+        known_identities (list[Identity]): The known identities
+        requests_queue (Queue): The queue of requests
+        responses_queue (Queue): The queue of responses
+    """
+    # If there is a request
+    if not requests_queue.empty():
+        # Get the request
+        frame, camera = requests_queue.get()
+        # Get the image of the camera
+        camera_img = all_camera_images[frame][camera]
+        # Get the identities in the frame
+        responses_queue.put((camera_img, known_identities, unknown_identities))
+
+
+def handle_frame(camera_images: list[np.ndarray], gallery: dict, unknown_identities: list[Identity], known_identities: list[Identity], frame: int):
     """
     This function handles a frame, extracting the faces, matching them with the identities and updating the identities.
 
@@ -114,7 +135,8 @@ def main():
         # Build the gallery
         print("Building the gallery...")
         gallery_path = os.path.join(dataset_path, environment_for_gallery)
-        gallery = build_gallery(gallery_path, f"{environment_for_gallery}_{scenario_for_gallery}_C1")
+        gallery_scenario_camera = f"{environment_for_gallery}_{scenario_for_gallery}_C1"
+        gallery = build_gallery(gallery_path, gallery_scenario_camera)
 
         # Initialize the identities
         unknown_identities: list[Identity] = [] # temporary identities which don't have a label yet
@@ -127,21 +149,32 @@ def main():
         frames_reduced = frames[130:int(len(frames)*0.2)]
         all_camera_images = [[cv2.imread(os.path.join(path, frame)) for path in paths] for frame in frames_reduced]
 
-        # Launch the GUI
-        GUI(known_identities, all_camera_images).start()
+        # Initialize gui queues
+        requests_queue = Queue()
+        responses_queue = Queue()
 
-        for i, frame in enumerate(frames_reduced):
-            print(f"Current frame: {frame}")
-            handle_frame(all_camera_images[i], gallery, unknown_identities, known_identities, frame)
+        # Launch the GUI
+        print("Launching GUI...")
+        # Launch the GUI on a separate thread
+        guip = GUI(requests_queue, responses_queue, len(frames_reduced), gallery_path)
+        guip.start()
+
+        for i, frame_name in enumerate(frames_reduced):
+            print(f"Current frame: {frame_name}")
+            handle_frame(all_camera_images[i], gallery, unknown_identities, known_identities, i)
+            handle_gui_communication(all_camera_images, unknown_identities, known_identities, requests_queue, responses_queue)
         # Force last decision
         unknown_identities, known_identities = decide_identities(unknown_identities, known_identities, gallery, force=True)
-        print("known: ", len(known_identities), "unknown: ", len(unknown_identities), "frames: ", len(frames_reduced))
-        #print(known_identities, unknown_identities)
         # # Draw result images
-        draw(known_identities + unknown_identities, frames_reduced, paths)
+        # draw(known_identities + unknown_identities, frames_reduced, paths)
         # Evaluate the results
         print(f"Evaluation for {environment} using {str(MAX_CAMERAS)} cameras")
-        evaluate_system(known_identities, os.path.join(dataset_path, f"{environment}_faces"))
+        # evaluate_system(known_identities, unknown_identities, os.path.join(dataset_path, f"{environment}_faces"))
+        # Wait for the GUI to close while communicating with it
+        while True:
+            handle_gui_communication(all_camera_images, unknown_identities, known_identities, requests_queue, responses_queue)
+            if not guip.is_alive():
+                break
         # TODO: remove the following line to test all the environments
         break
         

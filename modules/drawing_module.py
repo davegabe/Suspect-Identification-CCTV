@@ -33,9 +33,8 @@ class GUI(Process):
         self.camera_buttons = RadioButtons(self.camera_buttons_ax, ("Camera 1", "Camera 2", "Camera 3"))
         self.camera_buttons.on_clicked(self.update_curr_camera)
         # Launch the GUI
-        # plt.ion()
-        # plt.show()
         self.draw_gui()
+        plt.show()
 
     def update_curr_frame(self, val: int):
         """
@@ -139,7 +138,7 @@ class GUI(Process):
         # Draw three toggle buttons, one for each camera
         self.draw_camera_buttons()
         # Show the figure
-        plt.show()
+        self.fig.canvas.draw()
 
     def on_press(self, event):
         if event.key == "left" and self.curr_frame > 0:

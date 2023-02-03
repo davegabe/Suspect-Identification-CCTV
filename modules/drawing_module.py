@@ -9,6 +9,46 @@ import cv2
 from modules.gallery_module import Identity
 
 
+def draw_files(identities: list[Identity], frames: list[str], paths: list[str]):
+    """
+    This function draws the identities in the frames with the name and the bbox.
+
+    Args:
+        identities (list[Identity]): The identities
+        frames (list[str]): The frames
+        paths (list[str]): The paths of the cameras
+    """
+    # For each frame
+    for frame in frames:
+        camera_images: list[np.ndarray] = [cv2.imread(os.path.join(path, frame)) for path in paths]
+        # For each camera image
+        for num_cam, camera_img in enumerate(camera_images):
+            found = False
+            # Find the identity in the frame, draw the bbox and the name
+            for i, identity in enumerate(identities):
+                # Check if the frame is in the identity and draw the bbox and the name
+                for i in range(len(identity.frames)):
+                    if identity.frames[i] == f"{num_cam}_{frame}":
+                        print(f"In frame {frame} of camera {num_cam}, the identity is {identity.name}")
+                        # Draw the bouding box in plt
+                        x1 = int(identity.bboxes[i][0])
+                        y1 = int(identity.bboxes[i][1])
+                        x2 = int(identity.bboxes[i][2])
+                        y2 = int(identity.bboxes[i][3])
+                        # Draw the keypoints
+                        for kp in identity.kps[i]:
+                            cv2.circle(camera_img, (int(kp[0]), int(kp[1])), 1, (0, 0, 255), 1)
+
+                        cv2.rectangle(camera_img, (x1, y1), (x2, y2), (255, 0, 0), 2)
+                        # Print the identity reducing the size of the text to be minor than AA
+                        cv2.putText(camera_img, f"{identity.name}, id:{identity.id}", (x1, y1), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
+                found = True
+            # Save the image
+            if found:
+                plt.imshow(camera_img)
+                plt.imsave('results/' + f"_{num_cam}_" + frame + ".png", camera_img)
+                plt.close()
+
 class GUI(Process):
     """
     Class to draw the GUI.

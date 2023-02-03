@@ -5,52 +5,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 from insight_utilities.insight_interface import get_faces
 
-from modules.drawing_module import GUI
+from modules.drawing_module import GUI, draw_files
 from modules.evaluation_module import evaluate_system
 from modules.gallery_module import Identity, build_gallery, Identity
 from modules.decision_module import decide_identities
 from dataset.dataset import protocols
 from config import UNKNOWN_SIMILARITY_THRESHOLD, MAX_CAMERAS
-
-def draw(identities: list[Identity], frames: list[str], paths: list[str]):
-    """
-    This function draws the identities in the frames with the name and the bbox.
-
-    Args:
-        identities (list[Identity]): The identities
-        frames (list[str]): The frames
-        paths (list[str]): The paths of the cameras
-    """
-    # For each frame
-    for frame in frames:
-        camera_images: list[np.ndarray] = [cv2.imread(os.path.join(path, frame)) for path in paths]
-        # For each camera image
-        for num_cam, camera_img in enumerate(camera_images):
-            found = False
-            # Find the identity in the frame, draw the bbox and the name
-            for i, identity in enumerate(identities):
-                # Check if the frame is in the identity and draw the bbox and the name
-                for i in range(len(identity.frames)):
-                    if identity.frames[i] == f"{num_cam}_{frame}":
-                        print(f"In frame {frame} of camera {num_cam}, the identity is {identity.name}")
-                        # Draw the bouding box in plt
-                        x1 = int(identity.bboxes[i][0])
-                        y1 = int(identity.bboxes[i][1])
-                        x2 = int(identity.bboxes[i][2])
-                        y2 = int(identity.bboxes[i][3])
-                        # Draw the keypoints
-                        for kp in identity.kps[i]:
-                            cv2.circle(camera_img, (int(kp[0]), int(kp[1])), 1, (0, 0, 255), 1)
-
-                        cv2.rectangle(camera_img, (x1, y1), (x2, y2), (255, 0, 0), 2)
-                        # Print the identity reducing the size of the text to be minor than AA
-                        cv2.putText(camera_img, f"{identity.name}, id:{identity.id}", (x1, y1), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
-                found = True
-            # Save the image
-            if found:
-                plt.imshow(camera_img)
-                plt.imsave('results/' + f"_{num_cam}_" + frame + ".png", camera_img)
-                plt.close()
 
 def handle_gui_communication(all_camera_images: list[list[np.ndarray]], unknown_identities: list[Identity], known_identities: list[Identity], requests_queue: Queue, responses_queue: Queue, curr_frame: int):
     """
@@ -175,7 +135,7 @@ def main():
         # Force last decision
         unknown_identities, known_identities = decide_identities(unknown_identities, known_identities, gallery, force=True)
         # # Draw result images
-        # draw(known_identities + unknown_identities, frames_reduced, paths)
+        # draw_files(known_identities + unknown_identities, frames_reduced, paths)
         # Evaluate the results
         print(f"Evaluation for {environment} using {str(MAX_CAMERAS)} cameras")
         # evaluate_system(known_identities, unknown_identities, os.path.join(dataset_path, f"{environment}_faces"))

@@ -24,5 +24,13 @@ conda env config vars set XLA_FLAGS=--xla_gpu_cuda_data_dir=/usr/lib/cuda
 To download the dataset, you need to run the `dataset.py` script. This process will take a while. It will download the dataset, save all the archives in the `downloaded` folder and then extract everything in the `data` folder.
 
 ```bash
-python dataset.py
+python dataset/dataset.py
+```
+
+## Running the project
+
+To run the project, you need to run the `main.py` script. Use the following command to run the project.
+
+```bash
+python -m main
 ```

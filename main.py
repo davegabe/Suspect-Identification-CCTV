@@ -52,7 +52,7 @@ def draw(identities: list[Identity], frames: list[str], paths: list[str]):
                 plt.imsave('results/' + f"_{num_cam}_" + frame + ".png", camera_img)
                 plt.close()
 
-def handle_gui_communication(all_camera_images: list[list[np.ndarray]], unknown_identities: list[Identity], known_identities: list[Identity], requests_queue: Queue, responses_queue: Queue):
+def handle_gui_communication(all_camera_images: list[list[np.ndarray]], unknown_identities: list[Identity], known_identities: list[Identity], requests_queue: Queue, responses_queue: Queue, curr_frame: int):
     """
     This function handles the communication between the GUI and the main thread.
 
@@ -67,10 +67,19 @@ def handle_gui_communication(all_camera_images: list[list[np.ndarray]], unknown_
     if not requests_queue.empty():
         # Get the request
         frame, camera = requests_queue.get()
-        # Get the image of the camera
-        camera_img = all_camera_images[frame][camera]
-        # Get the identities in the frame
-        responses_queue.put((camera_img, known_identities, unknown_identities))
+        # If requested frame is not processed yet
+        if frame > curr_frame:
+            # Create a black image
+            camera_img = np.zeros(all_camera_images[0][0].shape, dtype=np.uint8)
+            # Write the text in center
+            cv2.putText(camera_img, "Frame not available", (int(camera_img.shape[1]/2), int(camera_img.shape[0]/2)), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
+            # Get the identities in the frame
+            responses_queue.put((camera_img, [], []))
+        else:
+            # Get the image of the camera
+            camera_img = all_camera_images[frame][camera]
+            # Get the identities in the frame
+            responses_queue.put((camera_img, known_identities, unknown_identities))
 
 
 def handle_frame(camera_images: list[np.ndarray], gallery: dict, unknown_identities: list[Identity], known_identities: list[Identity], frame: int):
@@ -162,7 +171,7 @@ def main():
         for i, frame_name in enumerate(frames_reduced):
             print(f"Current frame: {frame_name}")
             handle_frame(all_camera_images[i], gallery, unknown_identities, known_identities, i)
-            handle_gui_communication(all_camera_images, unknown_identities, known_identities, requests_queue, responses_queue)
+            handle_gui_communication(all_camera_images, unknown_identities, known_identities, requests_queue, responses_queue, i)
         # Force last decision
         unknown_identities, known_identities = decide_identities(unknown_identities, known_identities, gallery, force=True)
         # # Draw result images
@@ -172,7 +181,7 @@ def main():
         # evaluate_system(known_identities, unknown_identities, os.path.join(dataset_path, f"{environment}_faces"))
         # Wait for the GUI to close while communicating with it
         while True:
-            handle_gui_communication(all_camera_images, unknown_identities, known_identities, requests_queue, responses_queue)
+            handle_gui_communication(all_camera_images, unknown_identities, known_identities, requests_queue, responses_queue, len(frames_reduced))
             if not guip.is_alive():
                 break
         # TODO: remove the following line to test all the environments

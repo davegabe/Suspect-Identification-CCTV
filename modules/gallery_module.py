@@ -3,43 +3,37 @@ import numpy as np
 import cv2
 
 from insight_utilities.insight_interface import compareTwoFaces, get_face
-from config import GALLERY_THRESHOLD, MAX_MISSING_FRAMES, NUM_BEST_FACES, NUMBER_OF_LAST_FACES, MATCH_MODALITY, MAX_GALLERY_SIZE
+from config import GALLERY_PATH, GALLERY_SCENARIO, GALLERY_THRESHOLD, MAX_MISSING_FRAMES, NUM_BEST_FACES, NUMBER_OF_LAST_FACES, MATCH_MODALITY, MAX_GALLERY_SIZE
 
 
-def build_gallery(other_environment: str, scenario_camera: str):
+def build_gallery():
     """
     Build a gallery from the other environment.
-
-    Args:
-        other_environment (str): The other environment path.
-        scenario_camera (str): The scenario and the camera.
     """
-    # Load the gallery from the other environment and pick a random camera for a random scenario
-    other_environment += "_faces"
-    path = os.path.join(other_environment, os.listdir(other_environment)[0])
     # List of faces
-    faces = os.listdir(path)
+    path = os.path.join(GALLERY_PATH, GALLERY_SCENARIO)
+    names = os.listdir(path) # Get the list of names in the gallery
     # Create a new gallery
     gallery = {}
     # For each face in the gallery
-    for face in faces:
-        # Path of the face
-        images = os.listdir(os.path.join(path, face))
-        # Get all the .pgm images of the face
+    for name in names:
+        # Path of the name
+        images = os.listdir(os.path.join(path, name))
+        # Get all the .pgm images of the name
         images = list(filter(lambda x: x.endswith(".pgm"), images))[
             :MAX_GALLERY_SIZE]
         # Create a list of images
-        gallery[face] = []
+        gallery[name] = []
         # For each image
         for image in images:
             # Load the image
-            img = cv2.imread(os.path.join(path, face, image))
-            # Get features of the face
+            img = cv2.imread(os.path.join(path, name, image))
+            # Get features of the name
             face_feature, bboxes, kps = get_face(img)
             if face_feature is None:
                 continue
             # Add the image to the gallery
-            gallery[face].append(face_feature)
+            gallery[name].append(face_feature)
     # Return the gallery
     return gallery
 
@@ -55,8 +49,7 @@ def check_identity(gallery: dict, faces: list[np.ndarray]) -> dict[str, int]:
     Returns:
         dict(str, int): Dictionary with names of subjects and the number of occurrences inside faces (only if > 0).
     """
-    names: dict[str, int] = dict(
-    )  # each entry is the number of occurrences of the corresponding name in faces
+    names: dict[str, int] = dict() # each entry is the number of occurrences of the corresponding name in faces
     # For each face
     for i, face in enumerate(faces):
         # Best name for the face

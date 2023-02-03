@@ -10,7 +10,7 @@ from modules.evaluation_module import evaluate_system
 from modules.gallery_module import Identity, build_gallery, Identity
 from modules.decision_module import decide_identities
 from dataset.dataset import protocols
-from config import UNKNOWN_SIMILARITY_THRESHOLD, MAX_CAMERAS
+from config import TEST_PATH, TEST_SCENARIO, UNKNOWN_SIMILARITY_THRESHOLD, MAX_CAMERAS
 
 def handle_gui_communication(all_camera_images: list[list[np.ndarray]], unknown_identities: list[Identity], known_identities: list[Identity], requests_queue: Queue, responses_queue: Queue, curr_frame: int):
     """
@@ -85,67 +85,51 @@ def handle_frame(camera_images: list[np.ndarray], gallery: dict, unknown_identit
     unknown_identities, known_identities = decide_identities(unknown_identities, known_identities, gallery)
 
 def main():
-    dataset_path = "data"
-    for environment in  protocols.keys():
-        # Get an arbitrary scenario
-        scenario = protocols[environment][0]
-        # Get the max_cameras cameras
-        cameras = ["C" + str(i) for i in range(1, MAX_CAMERAS+1)]
-        # Get the paths for each camera
-        paths = [os.path.join("data", environment, f"{environment}_{scenario}_{camera}") for camera in cameras]
-        print(f"Current environment: {environment} on scenario {scenario} using {str(MAX_CAMERAS)} cameras")
-        # Get the other environments
-        other_environments = list(filter(lambda x: x != environment, protocols.keys()))
-        # Get an arbitrary environment for the gallery
-        environment_for_gallery = other_environments[0]
-        # Get an arbitrary scenario for the gallery
-        scenario_for_gallery = protocols[environment_for_gallery][0]
+    # Build the gallery
+    print("Building the gallery...")
+    gallery = build_gallery()
 
-        # Build the gallery
-        print("Building the gallery...")
-        gallery_path = os.path.join(dataset_path, environment_for_gallery)
-        gallery_scenario_camera = f"{environment_for_gallery}_{scenario_for_gallery}_C1"
-        gallery = build_gallery(gallery_path, gallery_scenario_camera)
+    # Initialize the identities
+    unknown_identities: list[Identity] = [] # temporary identities which don't have a label yet
+    known_identities: list[Identity] = [] # permanent identities which have a label
 
-        # Initialize the identities
-        unknown_identities: list[Identity] = [] # temporary identities which don't have a label yet
-        known_identities: list[Identity] = [] # permanent identities which have a label
+    # Load all frames
+    print("Loading frames...")
+    paths = [os.path.join(TEST_PATH, f"{TEST_SCENARIO}_C{i+1}") for i in range(MAX_CAMERAS)] # paths of the cameras
+    frames = list(filter(lambda x: x.endswith(".jpg"), os.listdir(paths[0]))) # frames of the cameras
+    frames = sorted(frames)
+    frames_reduced = frames[130:int(len(frames)*0.2)] # frames to be processed
+    all_camera_images = [[cv2.imread(os.path.join(path, frame)) for path in paths] for frame in frames_reduced] # images of the cameras
 
-        # Load all frames
-        print("Loading frames...")
-        frames = list(filter(lambda x: x.endswith(".jpg"), os.listdir(paths[0])))
-        frames = sorted(frames)
-        frames_reduced = frames[130:int(len(frames)*0.2)]
-        all_camera_images = [[cv2.imread(os.path.join(path, frame)) for path in paths] for frame in frames_reduced]
+    # Initialize gui queues
+    requests_queue = Queue()
+    responses_queue = Queue()
 
-        # Initialize gui queues
-        requests_queue = Queue()
-        responses_queue = Queue()
+    # Launch the GUI
+    print("Launching GUI...")
+    # Launch the GUI on a separate thread
+    guip = GUI(requests_queue, responses_queue, len(frames_reduced))
+    guip.start()
 
-        # Launch the GUI
-        print("Launching GUI...")
-        # Launch the GUI on a separate thread
-        guip = GUI(requests_queue, responses_queue, len(frames_reduced), gallery_path)
-        guip.start()
+    for i, frame_name in enumerate(frames_reduced):
+        print(f"Current frame: {frame_name}")
+        handle_frame(all_camera_images[i], gallery, unknown_identities, known_identities, i)
+        handle_gui_communication(all_camera_images, unknown_identities, known_identities, requests_queue, responses_queue, i)
 
-        for i, frame_name in enumerate(frames_reduced):
-            print(f"Current frame: {frame_name}")
-            handle_frame(all_camera_images[i], gallery, unknown_identities, known_identities, i)
-            handle_gui_communication(all_camera_images, unknown_identities, known_identities, requests_queue, responses_queue, i)
-        # Force last decision
-        unknown_identities, known_identities = decide_identities(unknown_identities, known_identities, gallery, force=True)
-        # # Draw result images
-        # draw_files(known_identities + unknown_identities, frames_reduced, paths)
-        # Evaluate the results
-        print(f"Evaluation for {environment} using {str(MAX_CAMERAS)} cameras")
-        # evaluate_system(known_identities, unknown_identities, os.path.join(dataset_path, f"{environment}_faces"))
-        # Wait for the GUI to close while communicating with it
-        while True:
-            handle_gui_communication(all_camera_images, unknown_identities, known_identities, requests_queue, responses_queue, len(frames_reduced))
-            if not guip.is_alive():
-                break
-        # TODO: remove the following line to test all the environments
-        break
+    # Force last decision
+    unknown_identities, known_identities = decide_identities(unknown_identities, known_identities, gallery, force=True)
+
+    # # Draw result images
+    # draw_files(known_identities + unknown_identities, frames_reduced, paths)
+
+    # Evaluate the results
+    # evaluate_system(known_identities, unknown_identities, os.path.join(dataset_path, f"{environment}_faces"))
+    
+    # Wait for the GUI to close while communicating with it
+    while True:
+        handle_gui_communication(all_camera_images, unknown_identities, known_identities, requests_queue, responses_queue, len(frames_reduced))
+        if not guip.is_alive():
+            break
         
 
 if __name__ == "__main__":

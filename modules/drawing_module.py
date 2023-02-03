@@ -7,6 +7,7 @@ from multiprocessing import Process, Queue
 import cv2
 
 from modules.gallery_module import Identity
+from config import GALLERY_PATH, GALLERY_SCENARIO
 
 
 def draw_files(identities: list[Identity], frames: list[str], paths: list[str]):
@@ -54,7 +55,7 @@ class GUI(Process):
     Class to draw the GUI.
     """
 
-    def __init__(self, requests_queue: Queue, responses_queue: Queue, n_frames: int, gallery_path: str):
+    def __init__(self, requests_queue: Queue, responses_queue: Queue, n_frames: int):
         super(GUI, self).__init__()
         # Create the queues
         self.requests_queue: Queue = requests_queue # using data as (frame, camera)
@@ -65,7 +66,7 @@ class GUI(Process):
         self.curr_frame: int = 0 # Current processed frame of the video
         self.n_frames: int = n_frames
         # Gallery path
-        self.gallery_path: str = gallery_path + "_faces"
+        self.gallery_path: str = os.path.join(GALLERY_PATH, GALLERY_SCENARIO)
 
     def run(self):
         """
@@ -91,16 +92,15 @@ class GUI(Process):
         self.camera_buttons.on_clicked(self.update_req_camera)
         # Pick random faces from the gallery to show in the GUI
         self.faces: dict[str, np.ndarray] = {}
-        path = os.path.join(self.gallery_path, os.listdir(self.gallery_path)[0])
-        names = os.listdir(path)
+        names = os.listdir(self.gallery_path) # Get the names of the people in the gallery
         # For each name in the gallery
         for name in names:
             # Path of the face
-            images = os.listdir(os.path.join(path, name))
+            images = list(filter(lambda x: x.endswith(".pgm"), os.listdir(os.path.join(self.gallery_path, name))))
             # Pick a random image of the face
             image = images[np.random.randint(0, len(images))]
             # Read the image
-            self.faces[name] = cv2.imread(os.path.join(path, name, image))
+            self.faces[name] = cv2.imread(os.path.join(self.gallery_path, name, image))
         # Launch the GUI
         self.draw_gui()
         plt.show()

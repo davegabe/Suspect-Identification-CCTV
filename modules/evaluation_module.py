@@ -14,7 +14,7 @@ def build_groundtruth(faces_path: str) -> dict[str, list[str]]:
     """
     groundtruth: dict[str, list[str]] = {}
     # Get all the names of the people in the groundtruth faces
-    names = os.listdir(faces_path)
+    names = os.listdir(faces_path) # Get the names of the people
     for name in names:
         # Get all the frames where the person is present
         frames = os.listdir(os.path.join(faces_path, name))

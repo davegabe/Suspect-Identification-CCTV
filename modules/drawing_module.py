@@ -284,6 +284,8 @@ class GUI(Process):
         frame, known_identities, unknown_identities = self.responses_queue.get()
         # Update the requested frame of the video
         self.frame = frame
+        # Swap the BGR frame to RGB
+        self.frame = cv2.cvtColor(self.frame, cv2.COLOR_BGR2RGB)
         # Update the known identities
         self.known_identities = known_identities
         # Update the unknown identities

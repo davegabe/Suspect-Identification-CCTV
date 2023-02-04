@@ -38,7 +38,7 @@ def build_gallery():
     return gallery
 
 
-def check_identity(gallery: dict, faces: list[np.ndarray]) -> dict[str, int]:
+def check_identity(gallery: dict, faces: list[np.ndarray]) -> list[str]:
     """
     Check if the face is in the gallery.
 
@@ -47,31 +47,25 @@ def check_identity(gallery: dict, faces: list[np.ndarray]) -> dict[str, int]:
         faces (list[np.ndarray]): List of faces to check. 
 
     Returns:
-        dict(str, int): Dictionary with names of subjects and the number of occurrences inside faces (only if > 0).
+        list[str]: List of names of the faces, sorted by similarity score (ranked).
     """
-    names: dict[str, int] = dict() # each entry is the number of occurrences of the corresponding name in faces
+    names: dict[str, float] = dict() # each entry is the number of occurrences of the corresponding name in faces
     # For each face
     for i, face in enumerate(faces):
-        # Best name for the face
-        best_name = ""
-        # Best similarity
-        best_sim = 0
         # For each subject in the gallery
         for subject in gallery:
             # For each face of the subject
             for face_feature in gallery[subject]:
                 # Compare the face with the face in the gallery
                 sim = compareTwoFaces(face, face_feature)
-                # If the faces "are the same"
-                if sim > best_sim:
-                    # Update the best similarity and the best name
-                    best_sim = sim
-                    best_name = subject
-        # So we have the best name for the face
-        if best_sim > GALLERY_THRESHOLD:
-            names[best_name] = names.get(best_name, 0) + 1
-    # If the face is not in the gallery
-    return names
+                # If the faces are similar
+                if sim > GALLERY_THRESHOLD:
+                    # Update the similarity score of the subject
+                    names[subject] = names.get(subject, 0) + sim
+    # So we have in names all the possible names (above threshold) and their cumulative similarity score
+    # Now we have to sort the names by similarity score
+    rank = sorted(names.keys(), key=lambda x: names[x], reverse=True)
+    return rank
 
 
 class Identity:
@@ -80,10 +74,10 @@ class Identity:
     """
     last_id: int = 0
 
-    def __init__(self, name: str = "Unknown"):
+    def __init__(self, ranked_names: list[str] = ["Unknown"]):
         self.id: int = Identity.last_id  # temporary id
         # definitive name of the identity, empty if the identity is not definitive
-        self.name: str = name
+        self.ranked_names: list[str] = ranked_names
         # bounding boxes of the faces in the frame
         self.bboxes: list[np.ndarray] = []
         self.kps: list[np.ndarray] = []  # keypoints of the faces in the frame
@@ -177,4 +171,4 @@ class Identity:
         return biggest_faces
 
     def __repr__(self):
-        return f"ID: {self.id}, Name: {self.name}, Frames: {self.frames}"
+        return f"ID: {self.id}, Name: {self.ranked_names[0]}, Frames: {self.frames}"

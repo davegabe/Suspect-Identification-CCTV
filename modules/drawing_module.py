@@ -30,7 +30,6 @@ def draw_files(identities: list[Identity], frames: list[str], paths: list[str]):
                 # Check if the frame is in the identity and draw the bbox and the name
                 for i in range(len(identity.frames)):
                     if identity.frames[i] == f"{num_cam}_{frame}":
-                        print(f"In frame {frame} of camera {num_cam}, the identity is {identity.name}")
                         # Draw the bouding box in plt
                         x1 = int(identity.bboxes[i][0])
                         y1 = int(identity.bboxes[i][1])
@@ -42,7 +41,7 @@ def draw_files(identities: list[Identity], frames: list[str], paths: list[str]):
 
                         cv2.rectangle(camera_img, (x1, y1), (x2, y2), (255, 0, 0), 2)
                         # Print the identity reducing the size of the text to be minor than AA
-                        cv2.putText(camera_img, f"{identity.name}, id:{identity.id}", (x1, y1), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
+                        cv2.putText(camera_img, f"{identity.ranked_names[0]}, id:{identity.id}", (x1, y1), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
                 found = True
             # Save the image
             if found:
@@ -182,7 +181,7 @@ class GUI(Process):
             # For each identity in the requested frame
             for i, identity in enumerate(identities_in_frame):
                 # Get the name of the identity
-                name = identity.name
+                name = identity.ranked_names[0]
                 # Get the photo of the identity
                 face = self.faces[name]
                 # Draw the photo of the identity
@@ -251,7 +250,8 @@ class GUI(Process):
 
                     cv2.rectangle(self.frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
                     # Print the identity reducing the size of the text to be minor than AA
-                    cv2.putText(self.frame, f"{identity.name}, id:{identity.id}", (x1, y1), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+                    print(identity.ranked_names)
+                    cv2.putText(self.frame, f"{identity.ranked_names[0]}, id:{identity.id}", (x1, y1), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
         # For each identity in the requested frame, draw the bounding box and the name
         for identity in self.unknown_identities:
             # Check if the frame is in the identity and draw the bbox and the name
@@ -268,7 +268,7 @@ class GUI(Process):
 
                     cv2.rectangle(self.frame, (x1, y1), (x2, y2), (255, 0, 0), 2)
                     # Print the identity reducing the size of the text to be minor than AA
-                    cv2.putText(self.frame, f"{identity.name}, id:{identity.id}", (x1, y1), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
+                    cv2.putText(self.frame, f"{identity.ranked_names[0]}, id:{identity.id}", (x1, y1), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
 
 
     def ask_for_frame(self):

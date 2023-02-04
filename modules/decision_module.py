@@ -24,15 +24,13 @@ def decide_identities(unknown_identities: list[Identity], known_identities: list
         if not unknown_identity.is_in_scene() or force:
             # We have to check if the face is similar to an unknown identity
             unknown_selected_faces: list[np.ndarray] = unknown_identity.get_biggest_faces()
-            names_selected_faces: dict[str, int] = check_identity(gallery, unknown_selected_faces)
+            ranked_names: list[str] = check_identity(gallery, unknown_selected_faces)
             # If there are no similar faces above the threshold, we keep the identity as unknown
-            if len(names_selected_faces.keys()) == 0:
+            if len(ranked_names) == 0:
                 continue
-            # We get the name with the most occurences
-            name = max(names_selected_faces, key=names_selected_faces.get)
             # We create a new identity with the name in known identities
             new_identity = unknown_identity # We copy the unknown identity
-            new_identity.name = name # We change the id of the new identity with the name
+            new_identity.ranked_names = ranked_names # We change the id of the new identity with the name
             known_identities.append(new_identity)
             identified_identities.append(i)
     # We can finally remove the unknown identities from the list

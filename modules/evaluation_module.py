@@ -1,34 +1,69 @@
 import os
-
+import numpy as np
+import xml.etree.ElementTree as ET
 from modules.gallery_module import Identity
 
-def build_groundtruth(faces_path: str) -> dict[str, list[str]]:
+class GroundTruthItem():
+    """
+    Class that represents a ground truth item.
+    """
+    def __init__(self, name: str, left_eye: tuple[int, int], right_eye: tuple[int, int]):
+        """
+        Args:
+            name: Name of the person.
+            left_eye: Left eye (x, y).
+            right_eye: Right eye (x, y).
+        """
+        self.name = name
+        self.left_eye = left_eye
+        self.right_eye = right_eye
+
+    def __repr__(self) -> str:
+        return f"Id: {self.name}, Left eye: {self.left_eye}, Right eye: {self.right_eye}"
+
+class EvalIdentityItem():
+    """
+    Class that represents an identity item.
+    """
+    def __init__(self, ranks: str, bbox: np.ndarray):
+        """
+        Args:
+            ranks: Possible identities for the face ordered by rank.
+            bbox: Bounding box.
+        """
+        self.ranks = ranks
+        self.bbox = bbox
+
+def build_groundtruth(groundtruth_paths: list[str]) -> dict[str, list[GroundTruthItem]]:
     """
     Builds a dictionary of groundtruth faces.
 
     Args:
-        faces_path: Path to the groundtruth faces.
+        groundtruth_paths: List of paths to the groundtruth faces.
 
     Returns:
-        A dictionary of groundtruth faces.
+        A dictionary of groundtruth faces where the key is the frame number and the value is a list of GroundTruthItem.
     """
-    groundtruth: dict[str, list[str]] = {}
-    # Get all the names of the people in the groundtruth faces
-    names = os.listdir(faces_path) # Get the names of the people
-    for name in names:
-        # Get all the frames where the person is present
-        frames = os.listdir(os.path.join(faces_path, name))
-        # Remove the extension from the frames
-        frames = [frame.split(".")[0] for frame in frames]
-        # For each frame, add the name to the groundtruth dictionary
-        for frame in frames:
-            if frame not in groundtruth:
-                groundtruth[frame] = []
-            groundtruth[frame].append(name)
-    # Return the groundtruth dictionary
+    groundtruth: dict[str, list[GroundTruthItem]] = {}
+    for groundtruth_path in groundtruth_paths:
+        cam_n = os.path.basename(groundtruth_path).split("_")[-1].split(".")[0][1] # Assumes the name of the file is "ENV_SN_CN.n.xml"
+        tree = ET.parse(groundtruth_path)
+        for frame in tree.getroot():
+            frame_n = frame.attrib["number"]
+            groundtruth[f"{cam_n}_{frame_n}"] = []
+            for person in frame.findall("person"):
+                r_eye = person.find("rightEye")
+                l_eye = person.find("leftEye")
+                groundtruth[f"{cam_n}_{frame_n}"].append(
+                    GroundTruthItem(
+                        person.attrib["id"], 
+                        (int(l_eye.attrib["x"]), int(l_eye.attrib["y"])), 
+                        (int(r_eye.attrib["x"]), int(r_eye.attrib["y"]))
+                    )
+                )
     return groundtruth
 
-def list_to_dict_identities(identities: list[Identity]) -> dict[str, list[str]]:
+def list_to_dict_identities(identities: list[Identity]) -> dict[str, list[EvalIdentityItem]]:
     """
     Converts a list of identities to a dictionary of identities.
     
@@ -36,19 +71,43 @@ def list_to_dict_identities(identities: list[Identity]) -> dict[str, list[str]]:
         identities: List of identities.
 
     Returns:
-        Dictionary of frame number and identity.
+        A dictionary of identities where the key is the frame number and the value is a list of EvalIdentityItem.
     """
     # Initialize the dictionary
-    identities_dict: dict[str, list[str]] = {}
-    # For each identity, add the frame number and the identity to the dictionary
+    identities_dict: dict[str, list[EvalIdentityItem]] = {}
+    # For each identity, add the frame number and the bounding box in the frame and the ranks
     for identity in identities:
-        # For each frame, add the identity to the dictionary
-        for frame in identity.frames:
-            identities_dict[frame] = identities_dict.get(frame, []) + [identity.name]
+        # For each frame, add the bounding box of the face and the ranks
+        for i, frame in enumerate(identity.frames):
+            identities_dict[frame] = identities_dict.get(frame, []) + [EvalIdentityItem(identity.ranks, identity.bboxes[i])]
     # Return the dictionary
     return identities_dict
 
-def evaluate_system(known_identities: list[Identity], unknown_identities: list[Identity], groundtruth_faces_path: str):
+def contains_eyes(bbox: np.ndarray, left_eye: np.ndarray, right_eye: np.ndarray) -> bool:
+    """
+    Checks if the eye is inside the bounding box.
+
+    Args:
+        bbox: Bounding box.
+        left_eye: Left eye (x, y)
+        right_eye: Right eye (x, y)
+
+    Returns:
+        True if the eye is inside the bounding box, False otherwise.
+    """
+    # Get the coordinates of the bounding box
+    x, y, w, h = bbox
+    # Get the coordinates of the eyes
+    x_l, y_l = left_eye
+    x_r, y_r = right_eye
+    # Check if the left eye is inside the bounding box
+    is_left_inside = x <= x_l <= x + w and y <= y_l <= y + h
+    # Check if the right eye is inside the bounding box
+    is_right_inside = x <= x_r <= x + w and y <= y_r <= y + h
+    # Check if the eyes are inside the bounding box
+    return is_left_inside and is_right_inside
+
+def evaluate_system(known_identities: list[Identity], unknown_identities: list[Identity], groundtruth_paths: list[str], all_frames: list[str]):
     """
     Evaluates the system.
 
@@ -58,63 +117,49 @@ def evaluate_system(known_identities: list[Identity], unknown_identities: list[I
         groundtruth_faces_path: Path to the groundtruth faces.
     """
     # Get the groundtruth faces
-    groundtruth = build_groundtruth(groundtruth_faces_path)
+    groundtruth = build_groundtruth(groundtruth_paths)
     # Create detected dict
     detected_known = list_to_dict_identities(known_identities)
     detected_unknown = list_to_dict_identities(unknown_identities)
     # Get the frames where the system detected faces
     detected_known_frames = list(detected_known.keys())
     detected_unknown_frames = list(detected_unknown.keys())
-    # Get the frames where the system didn't detect faces
-    not_detected_frames = set(groundtruth.keys()) - set( detected_known_frames + detected_unknown_frames)
-    extra_detected_frames = set(detected_known_frames + detected_unknown_frames) - set(groundtruth.keys())
 
-    # Get the frames where the system detected faces but didn't detect the correct person
-    incorrect_frames = set()
+    incorrect_frames = set() # the frames where the system detected faces but didn't detect the correct person
     true_positives: dict[str, list[str]] = {} # detected known faces (positive identification) that are in the gallery
     true_negatives: dict[str, list[str]] = {} # detected unknown faces (negative identification) that are not in the gallery
     false_positives: dict[str, list[str]] = {} # detected known faces that are not in the gallery
     false_negatives: dict[str, list[str]] = {} # detected known faces that are in in the gallery, but not the actual ones (they are different from ground thruth), AND detected unknown faces that are in the gallery, AND not detected faces that are in the gallery
 
-    # TODO: da rivedere tutto
-    # For each frame where the system detected faces
-    for frame in detected_known_frames:
-        # If the system detected faces but there were no faces in the groundtruth, then the system detected a false positive
-        if groundtruth.get(frame) is None:
-            incorrect_frames.add(frame)
-            # Calculate the false positives. The false positives are the faces that the system detected but are not in the groundtruth
-            false_positives[frame] = detected_known[frame]
-        else:
-            #TODO: da rivedere, metti che una faccia viene riconosciuta piu volte nello stesso frame?
-            # Calculate the intersection between the detected faces and the groundtruth faces
-            intesection = set(detected_known[frame]).intersection(set(groundtruth[frame]))
-            # Calculate the union between the detected faces and the groundtruth faces
-            union = set(detected_known[frame]).union(set(groundtruth[frame]))
+    # For each frame
+    for frame in all_frames:
+        # Get identities detected in the frame
+        known_ids = detected_known.get(frame, [])
+        unknown_ids = detected_unknown.get(frame, [])
+        # Get the groundtruth identities in the frame
+        groundtruth_ids = groundtruth.get(frame, [])
 
-            print(f"union: {union} \n\nintersection: {intesection}")
-            # If the intersection is same length as the groundtruth, then the system detected the correct person
-            if len(intesection) != len(groundtruth[frame]): # if intersection is not equal to groundtruth, then we have a false negative (we missed someone)
+        # We update the true positives
+        for known_id in known_ids:
+            # We find the groundtruth identity corresponding to the known identity (check if the eyes are inside the bounding box)
+            groundtruth_id: GroundTruthItem = next((x for x in groundtruth_ids if contains_eyes(known_id.bbox, x.left_eye, x.right_eye)), None)
+            # If we found a groundtruth identity, we check if the name is in the ranks
+            if groundtruth_id is not None and groundtruth_id.name in known_id.ranks:
+                # We have corectly identified the person
+                true_positives[frame] = true_positives.get(frame, []) + [groundtruth_id.name]
+            else:
+                # We have not correctly identified the person
+                false_positives[frame] = false_positives.get(frame, []) + [groundtruth_id.name]
                 incorrect_frames.add(frame)
-                # Calculate the false negatives. The false negatives are the faces that are in the groundtruth but the system didn't detect
-                false_negatives[frame] = list(set(groundtruth[frame]) - set(detected_known[frame]))
-                # true_negatives[frame] = list(set(detected[frame]) - set(groundtruth[frame]) - set(detected[frame]))
-            if len(union) != len(detected_known[frame]): # if union is not equal to detected, then we have a false positive (we detected someone who wasn't there)
-                incorrect_frames.add(frame)
-                # Calculate the false positives. The false positives are the faces that the system detected but are not in the groundtruth
-                false_positives[frame] = list(set(detected_known[frame]) - set(groundtruth[frame]))
-            if len(intesection) == len(groundtruth[frame]) and len(union) == len(detected_known[frame]):
-                true_positives[frame] = detected_known[frame]
-                print(detected_known[frame])
-    
-    for frame in detected_unknown_frames:
-        if groundtruth.get(frame) is None:
-            # TODO: da rivedere, come capire se una faccia che e' stata riconosciuta come unknown non dovrebbe essere stata riconosciuta perche non una faccia?
-            true_negatives[frame] = detected_unknown[frame]
-        else:
-            union = set(detected_unknown[frame]).union(set(groundtruth[frame])) # false negative
-            if len(union) != len(detected_known[frame]):
-                incorrect_frames.add(frame)
-                false_negatives[frame] = list(set(groundtruth[frame]) - set(detected_unknown[frame]))
+        
+
+
+
+
+        # true_positives[frame]  = [x for x in known_ids if x in groundtruth_ids]
+        true_negatives[frame]  = [x for x in unknown_ids if x not in groundtruth_ids]
+        false_negatives[frame] = [x for x in groundtruth_ids if x not in known_ids]
+        # false_positives[frame] = [x for x in known_ids if x not in groundtruth_ids]
 
     # TODO: ricalcolare roba in base a false negatives e false positives, etc            
     # Get the frames where the system detected faces and detected the correct person
@@ -151,6 +196,7 @@ def evaluate_system(known_identities: list[Identity], unknown_identities: list[I
     ROC and DET: Receiver Operating Characteristic and Detection Error Tradeoff    
     
     
+
     """
 
     FP = len([y for sublist in false_positives.values() for y in sublist])
@@ -174,5 +220,4 @@ def evaluate_system(known_identities: list[Identity], unknown_identities: list[I
     print(f"False acceptance rate: {FAR}, False rejection rate: {FRR}")
     print(f"CMS: {CMS}")
     print("Incorrect frames: ", len(incorrect_frames))
-    print("Not detected frames: ", len(not_detected_frames))
 

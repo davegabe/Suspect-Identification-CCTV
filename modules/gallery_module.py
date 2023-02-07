@@ -1,39 +1,38 @@
 import os
+from pprint import pprint
 import numpy as np
 import cv2
 
 from insight_utilities.insight_interface import compareTwoFaces, get_face
-from config import GALLERY_PATH, GALLERY_SCENARIO, GALLERY_THRESHOLD, MAX_MISSING_FRAMES, NUM_BEST_FACES, NUMBER_OF_LAST_FACES, MATCH_MODALITY, MAX_GALLERY_SIZE
+from config import GALLERY_PATH, GALLERY_THRESHOLD, MAX_MISSING_FRAMES, NUM_BEST_FACES, NUMBER_OF_LAST_FACES, MATCH_MODALITY
 
 
 def build_gallery():
     """
     Build a gallery from the other environment.
     """
-    # List of faces
-    path = os.path.join(GALLERY_PATH, GALLERY_SCENARIO)
-    names = os.listdir(path) # Get the list of names in the gallery
+    folders = os.listdir(GALLERY_PATH)
     # Create a new gallery
     gallery = {}
     # For each face in the gallery
-    for name in names:
-        # Path of the name
-        images = os.listdir(os.path.join(path, name))
-        # Get all the .pgm images of the name
-        images = list(filter(lambda x: x.endswith(".pgm"), images))[
-            :MAX_GALLERY_SIZE]
-        # Create a list of images
-        gallery[name] = []
-        # For each image
-        for image in images:
-            # Load the image
-            img = cv2.imread(os.path.join(path, name, image))
+    for folder in folders:
+        
+        for name in os.listdir(os.path.join(GALLERY_PATH, folder)):
+            if not name.endswith(".JPG"):
+                continue
+            # Create a list of images
+            id = name.split(".")[0].split("ID")[1]
+            # For each image
+            img = cv2.imread(os.path.join(GALLERY_PATH, folder, name))
             # Get features of the name
             face_feature, bboxes, kps = get_face(img)
             if face_feature is None:
                 continue
             # Add the image to the gallery
-            gallery[name].append(face_feature)
+            if id not in gallery:
+                gallery[id] = []
+            gallery[id].append(face_feature)
+    
     # Return the gallery
     return gallery
 

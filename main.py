@@ -41,7 +41,7 @@ def handle_gui_communication(all_camera_images: list[list[np.ndarray]], unknown_
             responses_queue.put((camera_img, known_identities, unknown_identities))
 
 
-def handle_frame(camera_images: list[np.ndarray], gallery: dict, unknown_identities: list[Identity], known_identities: list[Identity], frame: int):
+def handle_frame(camera_images: list[np.ndarray], gallery: dict, unknown_identities: list[Identity], known_identities: list[Identity], frame: int, frame_name: str):
     """
     This function handles a frame, extracting the faces, matching them with the identities and updating the identities.
 
@@ -67,13 +67,13 @@ def handle_frame(camera_images: list[np.ndarray], gallery: dict, unknown_identit
                 # Get the identity with the max similarity
                 identity = unknown_identities[index]
                 # Add the frame to the identity
-                identity.add_frame(face, bbox, kps, f"{num_cam}_{frame}")
+                identity.add_frame(face, bbox, kps, f"{num_cam}_{frame_name}")
                 # Add the identity to the list of found identities
                 found_identities.append(identity)
             else:
                 # Create a new identity
                 new_identity = Identity()
-                new_identity.add_frame(face, bbox, kps, f"{num_cam}_{frame}")
+                new_identity.add_frame(face, bbox, kps, f"{num_cam}_{frame_name}")
                 unknown_identities.append(new_identity)
     # For each unknown identity, check if it has been found in the current frame
     for unknown_identity in unknown_identities:
@@ -102,7 +102,6 @@ def main():
     #             break
     
     # Build the gallery
-    pprint(build_groundtruth(["data/groundtruth/P1E_S1_C1.xml", "data/groundtruth/P1E_S1_C2.xml", "data/groundtruth/P1E_S1_C3.xml"]))
     print("Building the gallery...")
     gallery = build_gallery()
 
@@ -125,12 +124,13 @@ def main():
     # Launch the GUI
     print("Launching GUI...")
     # Launch the GUI on a separate thread
-    guip = GUI(requests_queue, responses_queue, len(frames_reduced))
+    all_frames_no_cameras = list(map(lambda x: x.split(".")[0], frames_reduced))
+    guip = GUI(requests_queue, responses_queue, len(frames_reduced), all_frames_no_cameras)
     guip.start()
 
-    for i, frame_name in enumerate(frames_reduced):
+    for i, frame_name in enumerate(all_frames_no_cameras):
         print(f"Current frame: {frame_name}")
-        handle_frame(all_camera_images[i], gallery, unknown_identities, known_identities, i)
+        handle_frame(all_camera_images[i], gallery, unknown_identities, known_identities, i, frame_name)
         handle_gui_communication(all_camera_images, unknown_identities, known_identities, requests_queue, responses_queue, i)
 
     # Force last decision
@@ -140,7 +140,11 @@ def main():
     # draw_files(known_identities + unknown_identities, frames_reduced, paths)
 
     # Evaluate the results
-    evaluate_system(known_identities, unknown_identities, [os.path.join("data/groundtruth/", f"{TEST_SCENARIO}_C{i+1}{TEST_SCENARIO2}.xml") for i in range(MAX_CAMERAS)], frames_reduced)
+    all_frames_cameras = []
+    for i in range(len(all_camera_images[0])):
+        for frame in map(lambda x: x.split(".")[0], frames_reduced):
+            all_frames_cameras.append(f"{i}_{frame}")
+    evaluate_system(known_identities, unknown_identities, [os.path.join("data/groundtruth/", f"{TEST_SCENARIO}_C{i+1}{TEST_SCENARIO2}.xml") for i in range(MAX_CAMERAS)], all_frames_cameras)
     
     # Wait for the GUI to close while communicating with it
     while True:

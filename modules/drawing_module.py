@@ -54,7 +54,7 @@ class GUI(Process):
     Class to draw the GUI.
     """
 
-    def __init__(self, requests_queue: Queue, responses_queue: Queue, n_frames: int):
+    def __init__(self, requests_queue: Queue, responses_queue: Queue, n_frames: int, all_frames: list[str]):
         super(GUI, self).__init__()
         # Create the queues
         self.requests_queue: Queue = requests_queue # using data as (frame, camera)
@@ -64,8 +64,7 @@ class GUI(Process):
         self.req_camera: int = 0
         self.curr_frame: int = 0 # Current processed frame of the video
         self.n_frames: int = n_frames
-        # Gallery path
-        self.gallery_path: str = os.path.join(GALLERY_PATH, GALLERY_SCENARIO)
+        self.all_frames: list[str] = all_frames
 
     def run(self):
         """
@@ -91,15 +90,18 @@ class GUI(Process):
         self.camera_buttons.on_clicked(self.update_req_camera)
         # Pick random faces from the gallery to show in the GUI
         self.faces: dict[str, np.ndarray] = {}
-        names = os.listdir(self.gallery_path) # Get the names of the people in the gallery
+        face_images_folder = os.listdir(GALLERY_PATH)[0]
         # For each name in the gallery
-        for name in names:
-            # Path of the face
-            images = list(filter(lambda x: x.endswith(".pgm"), os.listdir(os.path.join(self.gallery_path, name))))
-            # Pick a random image of the face
-            image = images[np.random.randint(0, len(images))]
-            # Read the image
-            self.faces[name] = cv2.imread(os.path.join(self.gallery_path, name, image))
+        for name in os.listdir(os.path.join(GALLERY_PATH, face_images_folder)):
+            if not name.endswith(".JPG"):
+                continue
+            # Create a list of images
+            id = name.split(".")[0].split("ID")[1]
+            # For each image
+            image = cv2.imread(os.path.join(GALLERY_PATH, face_images_folder, name))
+            #SWAP CHANNELS
+            image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+            self.faces[id] = image
         # Launch the GUI
         self.draw_gui()
         plt.show()
@@ -171,7 +173,7 @@ class GUI(Process):
         # Disable the axis
         self.suspects_ax.axis("off")
         # Get how many identities there are in the requested frame
-        identities_in_frame = [identity for identity in self.known_identities if f"{self.req_camera}_{self.req_frame}" in identity.frames]
+        identities_in_frame = [identity for identity in self.known_identities if f"{self.req_camera}_{self.all_frames[self.req_frame]}" in identity.frames]
         n_identities = len(identities_in_frame)
         if n_identities > 0:
             # Create a new figure
@@ -238,7 +240,7 @@ class GUI(Process):
         for identity in self.known_identities:
             # Check if the frame is in the identity and draw the bbox and the name
             for i in range(len(identity.frames)):
-                if identity.frames[i] == f"{self.req_camera}_{self.req_frame}":
+                if identity.frames[i] == f"{self.req_camera}_{self.all_frames[self.req_frame]}":
                     # Draw the bouding box in plt
                     x1 = int(identity.bboxes[i][0])
                     y1 = int(identity.bboxes[i][1])
@@ -256,7 +258,7 @@ class GUI(Process):
         for identity in self.unknown_identities:
             # Check if the frame is in the identity and draw the bbox and the name
             for i in range(len(identity.frames)):
-                if identity.frames[i] == f"{self.req_camera}_{self.req_frame}":
+                if identity.frames[i] == f"{self.req_camera}_{self.all_frames[self.req_frame]}":
                     # Draw the bouding box in plt
                     x1 = int(identity.bboxes[i][0])
                     y1 = int(identity.bboxes[i][1])

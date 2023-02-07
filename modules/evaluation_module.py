@@ -20,7 +20,7 @@ class GroundTruthItem():
         
 
     def __repr__(self) -> str:
-        return f"Id: {self.name}, Left eye: {self.left_eye}, Right eye: {self.right_eye}"
+        return f"(Id: {self.name}, Left eye: {self.left_eye}, Right eye: {self.right_eye})"
 
 class GroundTruthIdentity():
     """
@@ -108,7 +108,7 @@ def list_to_dict_identities(identities: list[Identity]) -> dict[str, list[EvalId
     for identity in identities:
         # For each frame, add the bounding box of the face and the ranks
         for i, frame in enumerate(identity.frames):
-            identities_dict[frame] = identities_dict.get(frame, []) + [EvalIdentityItem(identity.ranks, identity.bboxes[i])]
+            identities_dict[frame] = identities_dict.get(frame, []) + [EvalIdentityItem(identity.ranked_names, identity.bboxes[i])]
     # Return the dictionary
     return identities_dict
 
@@ -125,7 +125,7 @@ def contains_eyes(bbox: np.ndarray, left_eye: np.ndarray, right_eye: np.ndarray)
         True if the eye is inside the bounding box, False otherwise.
     """
     # Get the coordinates of the bounding box
-    x, y, w, h = bbox
+    x, y, w, h, _ = bbox
     # Get the coordinates of the eyes
     x_l, y_l = left_eye
     x_r, y_r = right_eye
@@ -161,6 +161,8 @@ def evaluate_system(known_identities: list[Identity], unknown_identities: list[I
 
     # For each frame
     for frame in all_frames:
+        frame = frame.split(".")[0] # remove the extension
+        print(f"Evaluating Frame {frame}")
         # Get identities detected in the frame
         known_ids = detected_known.get(frame, [])
         unknown_ids = detected_unknown.get(frame, [])
@@ -195,7 +197,7 @@ def evaluate_system(known_identities: list[Identity], unknown_identities: list[I
                 groundtruth_identity.rank_postitions[rank] = groundtruth_identity.rank_postitions.get(rank, 0) + 1
 
         # For each identity in groundtruth
-        for groundtruth_id in groundtruth_ids:
+        for groundtruth_id in filter(lambda x: x.name != "Unknown", groundtruth_ids):
             # Check if the identity is in the known identities
             found = map(lambda known_id: groundtruth_id.name in known_id.ranks and contains_eyes(known_id.bbox, groundtruth_id.left_eye, groundtruth_id.right_eye), known_ids)
             # If there is a face in the groundtruth that is not in the detected faces, it's a false rejection
@@ -204,67 +206,23 @@ def evaluate_system(known_identities: list[Identity], unknown_identities: list[I
                 incorrect_frames.add(frame)
 
         # for each unknown identity if its present as unknown in the groundtruth, it's a genuine rejection
+        print(f"Unknown identities: {unknown_ids}")
         unknown_identities_in_groundtruth = [x for x in groundtruth_ids if x.name == "Unknown"]
+        print(f"Unknown identities in groundtruth: {unknown_identities_in_groundtruth}")
         for i, unknown_id in enumerate(unknown_ids):
             if i < len(unknown_identities_in_groundtruth):
                 genuine_rejections[frame] = genuine_rejections.get(frame, []) + [unknown_id.ranks[0]] # ranks[0] contains "Unknown"
-                incorrect_frames.add(frame)
 
+    # FAR = FA / tutti gli impostori = FA / (FA+GR)
+    far = sum(map(len, false_acceptances.values())) / (sum(map(len, false_acceptances.values())) + sum(map(len, genuine_rejections.values())))
+    # DIR(k) = tutti quelli a rank k / tutti quelli che dovrebbero essere a rank 1
+    dir = {k: sum(map(lambda x: x.rank_postitions.get(k, 0), groundtruth_identities)) / sum(map(lambda x: x.rank_postitions.get(0, 0), groundtruth_identities)) for k in range(10)}
+    # FRR = 1-DIR(1)
+    frr = 1 - dir[0]
 
-    # TODO: ricalcolare roba in base a false negatives e false positives, etc            
-    # Get the frames where the system detected faces and detected the correct person
-    correct_frames = set(detected_known_frames + detected_unknown_frames) - incorrect_frames
-    # Calculate the precision
-    precision = len(correct_frames) / len(detected_known_frames + detected_unknown_frames)
-    # Calculate the recall
-    recall = len(correct_frames) / len(groundtruth.keys())
-    # Calculate the F1 score
-    f1_score = 2 * precision * recall / (precision + recall)
-    # Print the results
-
-    #false acceptance rate = false positives / (false positives + true negatives)
-    #false rejection rate = false negatives / (false negatives + true positives)
-    #false acceptance rate = false positives / (false positives + true negatives)
-    #false rejection rate = false negatives / (false negatives + true positives)
-
-    #ROC
-
-
-    """
-    Precision:  True positive / (True positive + False positive)
-    Recall: True positive / (True positive + False negative)
-    F1 score: 2 * Precision * Recall / (Precision + Recall)
-    
-    FRR: False negative / (False negative + True positive)
-    FAR: False positive / (False positive + True negative)
-
-    CMS(at rank k): True positive / (True positive + False positive + False negative)       #probability of correct match at rank k
-    CMC: cumulative match characteristic
-
-    EER(t): equal error rate at threshold t = {x: FRR(t)=x and FAR(t)=x }
-
-    ROC and DET: Receiver Operating Characteristic and Detection Error Tradeoff    
-    """
-
-    FP = len([y for sublist in false_positives.values() for y in sublist])
-    FN = len([y for sublist in false_negatives.values() for y in sublist])
-    TP = len([y for sublist in true_positives.values() for y in sublist])
-    TN = len([y for sublist in true_negatives.values() for y in sublist])
-
-    tot = 0
-    for i in true_positives.values():
-        tot += len(i)
-    print(f"TP: {TP}, oppure: {tot}")
-    FRR = FN / (FN + TP)
-    FAR = FP / (FP + TN)
-    CMS = TP / (TP + FP + FN) # at rank 1
-
-    print("Precision: ", precision)
-    print("Recall: ", recall)
-    print("F1 score: ", f1_score)
-    print(f"False positives: {FP}, False negatives: {FN}")
-    print(f"True positives: {TP}, True negatives: {TN}")
-    print(f"False acceptance rate: {FAR}, False rejection rate: {FRR}")
-    print(f"CMS: {CMS}")
-    print("Incorrect frames: ", len(incorrect_frames))
+    # Print results
+    print(f"False Acceptance Rate: {far}")
+    print(f"False Rejection Rate: {frr}")
+    for k, v in dir.items():
+        print(f"Detection rate in Rank {k}: {v}")
 

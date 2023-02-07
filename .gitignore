@@ -4,6 +4,8 @@ downloaded/
 LFW/
 facenet/
 
+temp_*/
+
 embeddings/
 
 results/
@@ -12,3 +14,7 @@ results/
 
 *.cpython*
 *.pyc
+
+*.pgm
+
+*.jpg

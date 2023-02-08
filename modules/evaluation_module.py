@@ -125,14 +125,17 @@ def contains_eyes(bbox: np.ndarray, left_eye: np.ndarray, right_eye: np.ndarray)
         True if the eye is inside the bounding box, False otherwise.
     """
     # Get the coordinates of the bounding box
-    x, y, w, h, _ = bbox
+    x1 = bbox[0]
+    y1 = bbox[1]
+    x2 = bbox[2]
+    y2 = bbox[3]
     # Get the coordinates of the eyes
     x_l, y_l = left_eye
     x_r, y_r = right_eye
     # Check if the left eye is inside the bounding box
-    is_left_inside = x <= x_l <= x + w and y <= y_l <= y + h
+    is_left_inside = x1 <= x_l <= x2 and y1 <= y_l <= y2
     # Check if the right eye is inside the bounding box
-    is_right_inside = x <= x_r <= x + w and y <= y_r <= y + h
+    is_right_inside = x1 <= x_r <= x2 and y1 <= y_r <= y2
     # Check if the eyes are inside the bounding box
     return is_left_inside and is_right_inside
 

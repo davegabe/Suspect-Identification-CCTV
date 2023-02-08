@@ -4,6 +4,7 @@ TEST_SCENARIO2 = "" # Some scenarios have two versions, when this is the case th
 GALLERY_PATH = "data/gallery" # Path to the gallery dataset (this should be different from the test dataset and must be a "*_faces" folder)
 GALLERY_SCENARIO = "P1L_S1_C1" # Path to the gallery dataset (this must be a subfolder of GALLEY_PATH, this must include the "_C*" suffix, e.g. "P1L_S1_C1")
 MAX_CAMERAS = 3 # Maximum number of cameras to use
+GROUNDTRUTH_PATH = "data/groundtruth" # Path to the groundtruth dataset (this should be different from the test dataset and must be a "*_faces" folder)
 
 UNKNOWN_SIMILARITY_THRESHOLD = 0.28 # Threshold used to decide if a face is similar to an unknown identity
 MAX_MISSING_FRAMES = 10 # Maximum number of frames an unknown identity can be missing before became to known identities (using decision module)

@@ -58,7 +58,7 @@ class EvalIdentityItem():
             ranks: Possible identities for the face ordered by rank.
             bbox: Bounding box.
         """
-        self.ranks = ranks
+        self.ranks = ranks # TODO: Rename to ranked_names
         self.bbox = bbox
 
 def build_groundtruth(groundtruth_paths: list[str], gallery: dict[str, list[np.ndarray]]) -> tuple[dict[str, list[GroundTruthItem]], list[GroundTruthIdentity]]:
@@ -96,7 +96,7 @@ def build_groundtruth(groundtruth_paths: list[str], gallery: dict[str, list[np.n
     for identity in groundtruth_identities:
         if identity.name not in gallery.keys():
             identity.is_impostor = True
-        if identity.name == "Unknown":
+        if identity.name == "Unknown": # all Unknowns are associated to a single identity (in theory)
             identity.is_impostor = True
     return groundtruth, groundtruth_identities
 
@@ -158,6 +158,16 @@ def evaluate_system(known_identities: list[Identity], unknown_identities: list[I
     """
     # Get the groundtruth faces
     groundtruth, groundtruth_identities = build_groundtruth(groundtruth_paths, gallery)
+    
+    n_impostor_faces = 0
+    n_genuine_faces = 0
+    for frame in groundtruth.keys():
+        for face in groundtruth[frame]:
+            identity = next((i for i in groundtruth_identities if face.name == i.name))
+            if identity.is_impostor:
+                n_impostor_faces += 1
+            else:
+                n_genuine_faces += 1
     # Create detected dict
     detected_known = list_to_dict_identities(known_identities)
     detected_unknown = list_to_dict_identities(unknown_identities)
@@ -167,72 +177,117 @@ def evaluate_system(known_identities: list[Identity], unknown_identities: list[I
     false_acceptances: dict[str, list[str]] = {} # detected known faces that are not in the gallery
     false_rejections: dict[str, list[str]] = {} # detected known faces that are in in the gallery, but not the actual ones (they are different from ground thruth), AND detected unknown faces that are in the gallery, AND not detected faces that are in the gallery
 
+    """
+    Assumiamo che la detection sia andata a buon fine e che dobbiamo solo valutare la identification
+    In questo contesto, per galleria, intendiamo le persone che sono state riconosciute come conosciute, mentre per impostori quelle che sono state riconosciute come sconosciute.
+    In ogni frame:
+        prendo le facce nella groundtruth (galleria+impostori)
+        controllo che tutti quelli nella galleria siano nei known, e tutti quelli degli impostori siano nei unknown
+        per galleria:
+            se non ci sono alcuni nei known: false reject
+            se ci sono ma sono non a rank 1: false reject+calcola DIR
+            tutti gli altri: genuine accept
+        per impostor:
+            se non ci sono alcuni negli unknown: boh (non fare niente?) (dovrebbe essere coperto da quelli che sono tra i known ma non in galleria)
+            tutti gli altri: genuine reject
+        
+        poi per ogni known:
+            se non e' nella galleria: false accept
+        per ogni unknown:
+            se non e' negli impostori: boh (non fare niente?) (dovrebbe essere coperto da quelli in galleria che non sono tra i known)
+    """
+    debug_contained = 0
     # For each frame
     for frame in all_frames:
         frame = frame.split(".")[0] # remove the extension
-        print(f"Evaluating Frame {frame}")
+        # print(f"Evaluating Frame {frame}")
         # Get identities detected in the frame
         known_ids = detected_known.get(frame, [])
         unknown_ids = detected_unknown.get(frame, [])
         # Get the groundtruth identities in the frame
-        groundtruth_ids = groundtruth.get(frame, [])
+        groundtruth_its = groundtruth.get(frame, [])
 
-        # For each known identity
-        for known_id in known_ids:
-            # We find the groundtruth identity corresponding to the known identity (check if the eyes are inside the bounding box)
-            groundtruth_id: GroundTruthItem = next((x for x in groundtruth_ids if contains_eyes(known_id.bbox, x.left_eye, x.right_eye)), None)
-            if groundtruth_id is not None:
-                groundtruth_identity: GroundTruthIdentity = next((x for x in groundtruth_identities if x.name == groundtruth_id.name), None)
-            # If there was no face there, it's a false rejection OR 
-            # if the face was there, but its similarity to the gallery is too low (doesn't appear in ranks), it's a false rejection
-            if groundtruth_id is None or groundtruth_identity.is_impostor:
-                # We have not correctly identified the person
-                false_acceptances[frame] = false_acceptances.get(frame, []) + [known_id]
-                incorrect_frames.add(frame)
-            elif groundtruth_id.name not in known_id.ranks:
-                false_rejections[frame] = false_rejections.get(frame, []) + [known_id]
-                incorrect_frames.add(frame)
-            # If the face was there and it's the correct person, we have correctly identified the person
-            elif groundtruth_id.name in known_id.ranks:
-                # We get the rank of the correct person (where it appears in the ranks list)
-                rank = known_id.ranks.index(groundtruth_id.name)
-                # If the rank is not 0, it's a false rejection
-                if rank != 0:
-                    false_rejections[frame] = false_rejections.get(frame, []) + [known_id]
-                    incorrect_frames.add(frame)
-                # Get the identity from the groundtruth identities with the same name
-                groundtruth_identity = next((x for x in groundtruth_identities if x.name == groundtruth_id.name), None)
-                assert groundtruth_identity is not None, f"Groundtruth identity {groundtruth_id.name} not found!"
-                # Get the rank of the groundtruth identity
-                groundtruth_identity.rank_postitions[rank] = groundtruth_identity.rank_postitions.get(rank, 0) + 1
+        for git in groundtruth_its:
+            try:
+                real_id = next((i for i in groundtruth_identities if i.name == git.name))
+            except StopIteration:
+                print(f"Identity {git.name} not found in the groundtruth identities")
+                exit(1)
+            if real_id.is_impostor: # Handle impostors
+                for uid in unknown_ids:
+                    if contains_eyes(uid.bbox, git.left_eye, git.right_eye):
+                        debug_contained += 1
+                        genuine_rejections[frame] = genuine_rejections.get(frame, []) + [uid]
+                        break
+                    # If it isn't in unknown, it should be in known and would be a false accept, otherwise it was not detected and it would be fine as well
+            else: # Handle genuine
+                in_known = False
+                for kid in known_ids:
+                    # We take the corresponding face
+                    if contains_eyes(kid.bbox, git.left_eye, git.right_eye):
+                        debug_contained += 1
+                        in_known = True # Face is found
+                        try:
+                            rank = kid.ranks.index(git.name)
+                        except ValueError: # Face is recognized but real identity is below the threshold
+                            false_rejections[frame] = false_rejections.get(frame, []) + [kid]
+                            break # We found face associated to eyes coordinates of ground identity, so we can skip to next ground identity
+                        if rank != 0: # Face is recognized but not at rank 1
+                            false_rejections[frame] = false_rejections.get(frame, []) + [kid]
+                        # At this point we know face is recognized and identity is at some rank, so we can use it in DIR
+                        real_id.rank_postitions[rank] = real_id.rank_postitions.get(rank, 0) + 1
+                        break # We found face associated to eyes coordinates of ground identity, so we can skip to next ground identity 
+                if not in_known: # If face is not in known we hope it is in unknown, and it is a false rejection (even if it is not in unknown it is a false rejection, but in that case face was not even detected)
+                    false_rejections[frame] = false_rejections.get(frame, []) + [kid]
+                    
+        # Check for false acceptances (known ids that are not in the gallery)
+        for kid in known_ids:
+            if not any(contains_eyes(kid.bbox, x.left_eye, x.right_eye) for x in groundtruth_its): # should also check if x is impostor?
+                debug_contained += 1
+                false_acceptances[frame] = false_acceptances.get(frame, []) + [kid]
 
-        # For each identity in groundtruth
-        for groundtruth_id in filter(lambda x: x.name != "Unknown", groundtruth_ids):
-            # Check if the identity is in the known identities
-            found = map(lambda known_id: groundtruth_id.name in known_id.ranks and contains_eyes(known_id.bbox, groundtruth_id.left_eye, groundtruth_id.right_eye), known_ids)
-            # If there is a face in the groundtruth that is not in the detected faces, it's a false rejection
-            if not any(found):
-                false_rejections[frame] = false_rejections.get(frame, []) + [groundtruth_id]
-                incorrect_frames.add(frame)
-
-        # for each unknown identity if its present as unknown in the groundtruth, it's a genuine rejection
-        print(f"Unknown identities: {unknown_ids}")
-        unknown_identities_in_groundtruth = [x for x in groundtruth_ids if x.name == "Unknown"]
-        print(f"Unknown identities in groundtruth: {unknown_identities_in_groundtruth}")
-        for i, unknown_id in enumerate(unknown_ids):
-            if i < len(unknown_identities_in_groundtruth):
-                genuine_rejections[frame] = genuine_rejections.get(frame, []) + [unknown_id.ranks[0]] # ranks[0] contains "Unknown"
-
+    print(f"Genuine Rejections: {len(genuine_rejections)}")
+    print(f"False Rejections: {len(false_rejections)}")
+    print(f"False Acceptances: {len(false_acceptances)}")
+    print(f"People in gallery: {len(list(filter(lambda x:not x.is_impostor, groundtruth_identities)))}")
     # FAR = FA / tutti gli impostori = FA / (FA+GR)
-    far = sum(map(len, false_acceptances.values())) / (sum(map(len, false_acceptances.values())) + sum(map(len, genuine_rejections.values())))
-    # DIR(k) = tutti quelli a rank k / tutti quelli che dovrebbero essere a rank 1
-    dir = {k: sum(map(lambda x: x.rank_postitions.get(k, 0), groundtruth_identities)) / sum(map(lambda x: x.rank_postitions.get(0, 0), groundtruth_identities)) for k in range(10)}
-    # FRR = 1-DIR(1)
-    frr = 1 - dir[0]
+    far = sum(map(len, false_acceptances.values())) / (n_impostor_faces)
+    # DIR(k) = tutti quelli a rank <= k / tutti quelli che dovrebbero essere a rank 1
+    dir = {}
+    # Get the max rank between all identities
+    max_k = 0
+    for i in filter(lambda x: not x.is_impostor, groundtruth_identities):
+        if len(i.rank_postitions.keys()) == 0:
+            continue
+        tmax = max(list(i.rank_postitions.keys()))
+        if tmax > max_k:
+            max_k = tmax
+    print(f"Max rank: {max_k}")
+    for k in range(max_k+1):
+        total_rank = 0
+        for i in range(k+1):
+            total_rank += sum(map(lambda x: x.rank_postitions.get(i, 0), groundtruth_identities))
+        dir[k] = total_rank / n_genuine_faces
+    # FRR = FR / tutti i genuini = FR / (FR+FA)
+    frr =  len(false_rejections) / n_genuine_faces
+
+    total_for_each_rank = {}
+    for i in groundtruth_identities:
+        for k, v in i.rank_postitions.items():
+            total_for_each_rank[k] = total_for_each_rank.get(k, 0) + v
+    print(f"Total for each rank: {total_for_each_rank}")
+
+    all_faces = 0
+    for f in groundtruth:
+        for face in groundtruth[f]:
+            all_faces += 1
+    print(f"Genuine faces: {n_genuine_faces}, impostor faces: {n_impostor_faces}, all faces: {all_faces}")
+    print(f"Debug contained: {debug_contained}")
 
     # Print results
     print(f"False Acceptance Rate: {far}")
     print(f"False Rejection Rate: {frr}")
     for k, v in dir.items():
         print(f"Detection rate in Rank {k}: {v}")
+    # print(f"Groundtruth identities: {list(map(lambda i: str(i.is_impostor) + i.name, groundtruth_identities))}")
 

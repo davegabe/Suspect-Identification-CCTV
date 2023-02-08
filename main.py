@@ -67,13 +67,13 @@ def handle_frame(camera_images: list[np.ndarray], gallery: dict, unknown_identit
                 # Get the identity with the max similarity
                 identity = unknown_identities[index]
                 # Add the frame to the identity
-                identity.add_frame(face, bbox, kps, f"{num_cam}_{frame_name}")
+                identity.add_frame(face, bbox, kps, f"{num_cam+1}_{frame_name}")
                 # Add the identity to the list of found identities
                 found_identities.append(identity)
             else:
                 # Create a new identity
                 new_identity = Identity()
-                new_identity.add_frame(face, bbox, kps, f"{num_cam}_{frame_name}")
+                new_identity.add_frame(face, bbox, kps, f"{num_cam+1}_{frame_name}")
                 unknown_identities.append(new_identity)
     # For each unknown identity, check if it has been found in the current frame
     for unknown_identity in unknown_identities:
@@ -126,12 +126,12 @@ def main():
     # Launch the GUI on a separate thread
     all_frames_no_cameras = list(map(lambda x: x.split(".")[0], frames_reduced))
     guip = GUI(requests_queue, responses_queue, len(frames_reduced), all_frames_no_cameras)
-    guip.start()
+    # guip.start()
 
     for i, frame_name in enumerate(all_frames_no_cameras):
         print(f"Current frame: {frame_name}")
         handle_frame(all_camera_images[i], gallery, unknown_identities, known_identities, i, frame_name)
-        handle_gui_communication(all_camera_images, unknown_identities, known_identities, requests_queue, responses_queue, i)
+        # handle_gui_communication(all_camera_images, unknown_identities, known_identities, requests_queue, responses_queue, i)
 
     # Force last decision
     unknown_identities, known_identities = decide_identities(unknown_identities, known_identities, gallery, force=True)
@@ -141,9 +141,9 @@ def main():
 
     # Evaluate the results
     all_frames_cameras = []
-    for i in range(len(all_camera_images[0])):
+    for i in range(MAX_CAMERAS):
         for frame in map(lambda x: x.split(".")[0], frames_reduced):
-            all_frames_cameras.append(f"{i}_{frame}")
+            all_frames_cameras.append(f"{i+1}_{frame}")
     evaluate_system(known_identities, unknown_identities, [os.path.join("data/groundtruth/", f"{TEST_SCENARIO}_C{i+1}{TEST_SCENARIO2}.xml") for i in range(MAX_CAMERAS)], all_frames_cameras, gallery)
     
     # Wait for the GUI to close while communicating with it

@@ -48,11 +48,6 @@ def main():
                 continue
             # For each person in the groundtruth, remove the face from the list of faces
             for person in frame:
-                # # Get name of the person
-                # name = person.attrib["id"]
-                # # If the name is Unknown, skip
-                # if name == "Unknown":
-                #     continue
                 # Get the left eye position
                 left_eye = person.find("leftEye")
                 left_eye_pos = (int(left_eye.attrib["x"]), int(left_eye.attrib["y"]))
@@ -72,12 +67,12 @@ def main():
                     kpss = np.delete(kpss, index, axis=0)
                 else:
                     print(f"WARNING: Could not find the face of person {person.attrib['id']} in frame {frame_n} of camera {cam_n}")
-            # If the face is not similar, save it as an Unknown face
-            if len(faces) > 0:
-                left_eye_pos = kpss[0][0]
-                right_eye_pos = kpss[0][1]
+            # If there are faces left, save them as unknown faces
+            for i, face in enumerate(faces):
+                left_eye_pos = kpss[i][0]
+                right_eye_pos = kpss[i][1]
                 # Draw bbox around the face
-                bbox = [int(x) for x in bboxes[0]]
+                bbox = [int(x) for x in bboxes[i]]
                 cv2.rectangle(img, (bbox[0], bbox[1]), (bbox[2], bbox[3]), (0, 0, 255), 2)
                 # Save the face image
                 cv2.imwrite(os.path.join(dest_path, f"C{camera+1}", f"unknown_face_{frame_n}.jpg"), img)
@@ -86,12 +81,12 @@ def main():
                 person.attrib["id"] = "Unknown"
                 # Create a tag <leftEye x="x" y="y"/>
                 left_eye = ET.SubElement(person, "leftEye")
-                left_eye.attrib["x"] = str(left_eye_pos[0])
-                left_eye.attrib["y"] = str(right_eye_pos[1])
+                left_eye.attrib["x"] = str(int(left_eye_pos[0]))
+                left_eye.attrib["y"] = str(int(right_eye_pos[1]))
                 # Create a tag <rightEye x="x" y="y"/>
                 right_eye = ET.SubElement(person, "rightEye")
-                right_eye.attrib["x"] = str(right_eye_pos[0])
-                right_eye.attrib["y"] = str(right_eye_pos[1])
+                right_eye.attrib["x"] = str(int(right_eye_pos[0]))
+                right_eye.attrib["y"] = str(int(right_eye_pos[1]))
                 # Add the person as child of frame element
                 frame.append(person)
         # Save the groundtruth

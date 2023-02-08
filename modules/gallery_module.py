@@ -1,5 +1,4 @@
 import os
-from pprint import pprint
 import numpy as np
 import cv2
 
@@ -7,16 +6,15 @@ from insight_utilities.insight_interface import compareTwoFaces, get_face
 from config import GALLERY_PATH, GALLERY_THRESHOLD, MAX_MISSING_FRAMES, NUM_BEST_FACES, NUMBER_OF_LAST_FACES, MATCH_MODALITY
 
 
-def build_gallery():
+def build_gallery() -> dict[str, list[np.ndarray]]:
     """
     Build a gallery from the other environment.
     """
     folders = os.listdir(GALLERY_PATH)
     # Create a new gallery
-    gallery = {}
+    gallery: dict[str, list[np.ndarray]] = {}
     # For each face in the gallery
     for folder in folders:
-        
         for name in os.listdir(os.path.join(GALLERY_PATH, folder)):
             if not name.endswith(".JPG"):
                 continue
@@ -32,7 +30,13 @@ def build_gallery():
             if id not in gallery:
                 gallery[id] = []
             gallery[id].append(face_feature)
-    
+    # Remove some faces from the gallery
+    ids_to_remove = []
+    for id in gallery:
+        if np.random.random() < 0.5:
+            ids_to_remove.append(id)
+    for id in ids_to_remove:
+        gallery.pop(id)
     # Return the gallery
     return gallery
 

@@ -144,7 +144,7 @@ def main():
     for i in range(len(all_camera_images[0])):
         for frame in map(lambda x: x.split(".")[0], frames_reduced):
             all_frames_cameras.append(f"{i}_{frame}")
-    evaluate_system(known_identities, unknown_identities, [os.path.join("data/groundtruth/", f"{TEST_SCENARIO}_C{i+1}{TEST_SCENARIO2}.xml") for i in range(MAX_CAMERAS)], all_frames_cameras)
+    evaluate_system(known_identities, unknown_identities, [os.path.join("data/groundtruth/", f"{TEST_SCENARIO}_C{i+1}{TEST_SCENARIO2}.xml") for i in range(MAX_CAMERAS)], all_frames_cameras, gallery)
     
     # Wait for the GUI to close while communicating with it
     while True:

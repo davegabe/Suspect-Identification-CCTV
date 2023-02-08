@@ -83,7 +83,7 @@ def handle_frame(camera_images: list[np.ndarray], gallery: dict, unknown_identit
     unknown_identities, known_identities = decide_identities(unknown_identities, known_identities, gallery)
 
 def main():
-    np.random.seed(SEED)
+    np.random.seed(SEED) # ඞ
 
     # Build the gallery
     print("Building the gallery...")
@@ -98,7 +98,7 @@ def main():
     paths = [os.path.join(TEST_PATH, f"{TEST_SCENARIO}_C{i+1}{TEST_SCENARIO2}") for i in range(MAX_CAMERAS)] # paths of the cameras
     frames = list(filter(lambda x: x.endswith(".jpg"), os.listdir(paths[0]))) # frames of the cameras
     frames = sorted(frames)
-    frames_reduced = frames[:int(len(frames))] # frames to be processed
+    frames_reduced = frames[136:int(len(frames)*0.2)] # frames to be processed
     all_camera_images = [[cv2.imread(os.path.join(path, frame)) for path in paths] for frame in frames_reduced] # images of the cameras
 
     # Initialize gui queues

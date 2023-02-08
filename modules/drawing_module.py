@@ -7,7 +7,7 @@ from multiprocessing import Process, Queue
 import cv2
 
 from modules.gallery_module import Identity
-from config import GALLERY_PATH, GALLERY_SCENARIO
+from config import GALLERY_PATH
 
 
 def draw_files(identities: list[Identity], frames: list[str], paths: list[str]):
@@ -173,7 +173,7 @@ class GUI(Process):
         # Disable the axis
         self.suspects_ax.axis("off")
         # Get how many identities there are in the requested frame
-        identities_in_frame = [identity for identity in self.known_identities if f"{self.req_camera}_{self.all_frames[self.req_frame]}" in identity.frames]
+        identities_in_frame = [identity for identity in self.known_identities if f"{self.req_camera+1}_{self.all_frames[self.req_frame]}" in identity.frames]
         n_identities = len(identities_in_frame)
         if n_identities > 0:
             # Create a new figure
@@ -240,7 +240,7 @@ class GUI(Process):
         for identity in self.known_identities:
             # Check if the frame is in the identity and draw the bbox and the name
             for i in range(len(identity.frames)):
-                if identity.frames[i] == f"{self.req_camera}_{self.all_frames[self.req_frame]}":
+                if identity.frames[i] == f"{self.req_camera+1}_{self.all_frames[self.req_frame]}":
                     # Draw the bouding box in plt
                     x1 = int(identity.bboxes[i][0])
                     y1 = int(identity.bboxes[i][1])
@@ -258,7 +258,7 @@ class GUI(Process):
         for identity in self.unknown_identities:
             # Check if the frame is in the identity and draw the bbox and the name
             for i in range(len(identity.frames)):
-                if identity.frames[i] == f"{self.req_camera}_{self.all_frames[self.req_frame]}":
+                if identity.frames[i] == f"{self.req_camera+1}_{self.all_frames[self.req_frame]}":
                     # Draw the bouding box in plt
                     x1 = int(identity.bboxes[i][0])
                     y1 = int(identity.bboxes[i][1])

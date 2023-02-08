@@ -88,7 +88,7 @@ class GUI(Process):
         self.slider.on_changed(self.update_req_frame)
         self.camera_buttons = RadioButtons(self.camera_buttons_ax, ("Camera 1", "Camera 2", "Camera 3"))
         self.camera_buttons.on_clicked(self.update_req_camera)
-        # Pick random faces from the gallery to show in the GUI
+        # Pick faces from the gallery to show in the GUI
         self.faces: dict[str, np.ndarray] = {}
         face_images_folder = os.listdir(GALLERY_PATH)[0]
         # For each name in the gallery

@@ -161,7 +161,7 @@ def evaluate_system(known_identities: list[Identity], unknown_identities: list[I
     
     n_impostor_faces = 0
     n_genuine_faces = 0
-    for frame in groundtruth.keys():
+    for frame in all_frames:
         for face in groundtruth[frame]:
             identity = next((i for i in groundtruth_identities if face.name == i.name))
             if identity.is_impostor:
@@ -177,6 +177,10 @@ def evaluate_system(known_identities: list[Identity], unknown_identities: list[I
     false_acceptances: dict[str, list[str]] = {} # detected known faces that are not in the gallery
     false_rejections: dict[str, list[str]] = {} # detected known faces that are in in the gallery, but not the actual ones (they are different from ground thruth), AND detected unknown faces that are in the gallery, AND not detected faces that are in the gallery
 
+    # print(all_frames[:50])
+    # print(sorted(list(groundtruth.keys()))[:50])
+    # print(sorted(list(detected_unknown.keys()))[:50])
+    
     """
     Assumiamo che la detection sia andata a buon fine e che dobbiamo solo valutare la identification
     In questo contesto, per galleria, intendiamo le persone che sono state riconosciute come conosciute, mentre per impostori quelle che sono state riconosciute come sconosciute.
@@ -196,7 +200,6 @@ def evaluate_system(known_identities: list[Identity], unknown_identities: list[I
         per ogni unknown:
             se non e' negli impostori: boh (non fare niente?) (dovrebbe essere coperto da quelli in galleria che non sono tra i known)
     """
-    debug_contained = 0
     # For each frame
     for frame in all_frames:
         frame = frame.split(".")[0] # remove the extension
@@ -216,7 +219,6 @@ def evaluate_system(known_identities: list[Identity], unknown_identities: list[I
             if real_id.is_impostor: # Handle impostors
                 for uid in unknown_ids:
                     if contains_eyes(uid.bbox, git.left_eye, git.right_eye):
-                        debug_contained += 1
                         genuine_rejections[frame] = genuine_rejections.get(frame, []) + [uid]
                         break
                     # If it isn't in unknown, it should be in known and would be a false accept, otherwise it was not detected and it would be fine as well
@@ -225,7 +227,6 @@ def evaluate_system(known_identities: list[Identity], unknown_identities: list[I
                 for kid in known_ids:
                     # We take the corresponding face
                     if contains_eyes(kid.bbox, git.left_eye, git.right_eye):
-                        debug_contained += 1
                         in_known = True # Face is found
                         try:
                             rank = kid.ranks.index(git.name)
@@ -237,14 +238,29 @@ def evaluate_system(known_identities: list[Identity], unknown_identities: list[I
                         # At this point we know face is recognized and identity is at some rank, so we can use it in DIR
                         real_id.rank_postitions[rank] = real_id.rank_postitions.get(rank, 0) + 1
                         break # We found face associated to eyes coordinates of ground identity, so we can skip to next ground identity 
+
                 if not in_known: # If face is not in known we hope it is in unknown, and it is a false rejection (even if it is not in unknown it is a false rejection, but in that case face was not even detected)
                     false_rejections[frame] = false_rejections.get(frame, []) + [kid]
                     
         # Check for false acceptances (known ids that are not in the gallery)
         for kid in known_ids:
-            if not any(contains_eyes(kid.bbox, x.left_eye, x.right_eye) for x in groundtruth_its): # should also check if x is impostor?
-                debug_contained += 1
+            found = False
+            for git in groundtruth_its:
+                try:
+                    real_id = next((i for i in groundtruth_identities if i.name == git.name))
+                except StopIteration:
+                    print(f"Identity {git.name} not found in the groundtruth identities")
+                    exit(1)
+                if real_id.is_impostor:
+                    continue
+                if contains_eyes(kid.bbox, git.left_eye, git.right_eye):
+                    found = True
+                    break
+            if not found:
                 false_acceptances[frame] = false_acceptances.get(frame, []) + [kid]
+                # This way we find all faces that we thought were in the gallery but are not. We also find all faces that are not in the ground truth (so faces detected where there are no faces)
+                # We could also do this by checking for all known, the ones that are impostors in the ground truth, but this way we don't find faces detected where there are not
+                
 
     print(f"Genuine Rejections: {len(genuine_rejections)}")
     print(f"False Rejections: {len(false_rejections)}")
@@ -277,12 +293,7 @@ def evaluate_system(known_identities: list[Identity], unknown_identities: list[I
             total_for_each_rank[k] = total_for_each_rank.get(k, 0) + v
     print(f"Total for each rank: {total_for_each_rank}")
 
-    all_faces = 0
-    for f in groundtruth:
-        for face in groundtruth[f]:
-            all_faces += 1
-    print(f"Genuine faces: {n_genuine_faces}, impostor faces: {n_impostor_faces}, all faces: {all_faces}")
-    print(f"Debug contained: {debug_contained}")
+    print(f"Genuine faces: {n_genuine_faces}, impostor faces: {n_impostor_faces}, all faces: {n_genuine_faces+n_impostor_faces}")
 
     # Print results
     print(f"False Acceptance Rate: {far}")
@@ -290,4 +301,5 @@ def evaluate_system(known_identities: list[Identity], unknown_identities: list[I
     for k, v in dir.items():
         print(f"Detection rate in Rank {k}: {v}")
     # print(f"Groundtruth identities: {list(map(lambda i: str(i.is_impostor) + i.name, groundtruth_identities))}")
+    return far, frr, dir, genuine_rejections, false_rejections, false_acceptances, n_genuine_faces, n_impostor_faces
 

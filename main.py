@@ -1,15 +1,14 @@
 from multiprocessing import Queue
 import os
-from pprint import pprint
 import cv2
 import numpy as np
 from insight_utilities.insight_interface import get_faces
 
 from modules.drawing_module import GUI
-from modules.evaluation_module import build_groundtruth, evaluate_system
+from modules.evaluation_module import evaluate_system
 from modules.gallery_module import Identity, build_gallery, Identity
 from modules.decision_module import decide_identities
-from config import TEST_PATH, TEST_SCENARIO, TEST_SCENARIO2, UNKNOWN_SIMILARITY_THRESHOLD, MAX_CAMERAS
+from config import TEST_PATH, TEST_SCENARIO, TEST_SCENARIO2, UNKNOWN_SIMILARITY_THRESHOLD, MAX_CAMERAS, SEED, USE_GUI
 
 def handle_gui_communication(all_camera_images: list[list[np.ndarray]], unknown_identities: list[Identity], known_identities: list[Identity], requests_queue: Queue, responses_queue: Queue, curr_frame: int):
     """
@@ -84,23 +83,8 @@ def handle_frame(camera_images: list[np.ndarray], gallery: dict, unknown_identit
     unknown_identities, known_identities = decide_identities(unknown_identities, known_identities, gallery)
 
 def main():
-    # for y in os.listdir("data/"):
-    #     if y.endswith("_faces"):
-    #         for x in os.listdir(f"data/{y}"):
-    #             print(f"data/{y}/{x}\n")
-    #             a = build_groundtruth(f"data/{y}/{x}")
-    #             for i, j in a.items():
-    #                 if len(j) > 1:
-    #                     pprint(f"{i}: {j}")
-    #                     break
+    np.random.seed(SEED)
 
-    # for x in os.listdir("data/groundtruth"):
-    #     a = build_groundtruth(f"data/groundtruth/{x}")
-    #     for i, j in a.items():
-    #         if len(j) > 1:
-    #             pprint(f"{x} --> {i}: {j}")
-    #             break
-    
     # Build the gallery
     print("Building the gallery...")
     gallery = build_gallery()
@@ -114,7 +98,7 @@ def main():
     paths = [os.path.join(TEST_PATH, f"{TEST_SCENARIO}_C{i+1}{TEST_SCENARIO2}") for i in range(MAX_CAMERAS)] # paths of the cameras
     frames = list(filter(lambda x: x.endswith(".jpg"), os.listdir(paths[0]))) # frames of the cameras
     frames = sorted(frames)
-    frames_reduced = frames[130:int(len(frames)*0.2)] # frames to be processed
+    frames_reduced = frames[:int(len(frames))] # frames to be processed
     all_camera_images = [[cv2.imread(os.path.join(path, frame)) for path in paths] for frame in frames_reduced] # images of the cameras
 
     # Initialize gui queues
@@ -125,19 +109,18 @@ def main():
     print("Launching GUI...")
     # Launch the GUI on a separate thread
     all_frames_no_cameras = list(map(lambda x: x.split(".")[0], frames_reduced))
-    guip = GUI(requests_queue, responses_queue, len(frames_reduced), all_frames_no_cameras)
-    # guip.start()
+    if USE_GUI:
+        guip = GUI(requests_queue, responses_queue, len(frames_reduced), all_frames_no_cameras)
+        guip.start()
 
     for i, frame_name in enumerate(all_frames_no_cameras):
         print(f"Current frame: {frame_name}")
         handle_frame(all_camera_images[i], gallery, unknown_identities, known_identities, i, frame_name)
-        # handle_gui_communication(all_camera_images, unknown_identities, known_identities, requests_queue, responses_queue, i)
+        if USE_GUI:
+            handle_gui_communication(all_camera_images, unknown_identities, known_identities, requests_queue, responses_queue, i)
 
     # Force last decision
     unknown_identities, known_identities = decide_identities(unknown_identities, known_identities, gallery, force=True)
-
-    # # Draw result images
-    # draw_files(known_identities + unknown_identities, frames_reduced, paths)
 
     # Evaluate the results
     all_frames_cameras = []
@@ -147,7 +130,7 @@ def main():
     evaluate_system(known_identities, unknown_identities, [os.path.join("data/groundtruth/", f"{TEST_SCENARIO}_C{i+1}{TEST_SCENARIO2}.xml") for i in range(MAX_CAMERAS)], all_frames_cameras, gallery)
     
     # Wait for the GUI to close while communicating with it
-    while True:
+    while True and USE_GUI:
         handle_gui_communication(all_camera_images, unknown_identities, known_identities, requests_queue, responses_queue, len(frames_reduced))
         if not guip.is_alive():
             break

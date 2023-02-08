@@ -83,6 +83,8 @@ def build_groundtruth(groundtruth_paths: list[str], gallery: dict[str, list[np.n
             for person in frame.findall("person"):
                 r_eye = person.find("rightEye")
                 l_eye = person.find("leftEye")
+                if r_eye is None or l_eye is None:
+                    continue
                 groundtruth[f"{cam_n}_{frame_n}"].append(
                     GroundTruthItem(
                         person.attrib["id"], 
@@ -267,7 +269,7 @@ def evaluate_system(known_identities: list[Identity], unknown_identities: list[I
     print(f"False Acceptances: {len(false_acceptances)}")
     print(f"People in gallery: {len(list(filter(lambda x:not x.is_impostor, groundtruth_identities)))}")
     # FAR = FA / tutti gli impostori = FA / (FA+GR)
-    far = sum(map(len, false_acceptances.values())) / (n_impostor_faces)
+    far = sum(map(len, false_acceptances.values())) / (n_impostor_faces) if n_impostor_faces != 0 else 0
     # DIR(k) = tutti quelli a rank <= k / tutti quelli che dovrebbero essere a rank 1
     dir = {}
     # Get the max rank between all identities
@@ -283,9 +285,9 @@ def evaluate_system(known_identities: list[Identity], unknown_identities: list[I
         total_rank = 0
         for i in range(k+1):
             total_rank += sum(map(lambda x: x.rank_postitions.get(i, 0), groundtruth_identities))
-        dir[k] = total_rank / n_genuine_faces
+        dir[k] = total_rank / n_genuine_faces if n_genuine_faces != 0 else 0
     # FRR = FR / tutti i genuini = FR / (FR+FA)
-    frr =  len(false_rejections) / n_genuine_faces
+    frr =  len(false_rejections) / n_genuine_faces if n_genuine_faces != 0 else 0
 
     total_for_each_rank = {}
     for i in groundtruth_identities:
@@ -301,5 +303,14 @@ def evaluate_system(known_identities: list[Identity], unknown_identities: list[I
     for k, v in dir.items():
         print(f"Detection rate in Rank {k}: {v}")
     # print(f"Groundtruth identities: {list(map(lambda i: str(i.is_impostor) + i.name, groundtruth_identities))}")
-    return far, frr, dir, genuine_rejections, false_rejections, false_acceptances, n_genuine_faces, n_impostor_faces
+    result = {}
+    result["far"] = far
+    result["frr"] = frr
+    result["dir"] = dir
+    result["genuine_rejections"] = len(genuine_rejections)
+    result["false_rejections"] = len(false_rejections)
+    result["false_acceptances"] = len(false_acceptances)
+    result["n_genuine_faces"] = n_genuine_faces
+    result["n_impostor_faces"] = n_impostor_faces
+    return result
 

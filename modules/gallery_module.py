@@ -41,7 +41,7 @@ def build_gallery() -> dict[str, list[np.ndarray]]:
     return gallery
 
 
-def check_identity(gallery: dict, faces: list[np.ndarray]) -> list[str]:
+def check_identity(gallery: dict, faces: list[np.ndarray], threshold: float) -> list[str]:
     """
     Check if the face is in the gallery.
 
@@ -62,7 +62,7 @@ def check_identity(gallery: dict, faces: list[np.ndarray]) -> list[str]:
                 # Compare the face with the face in the gallery
                 sim = compareTwoFaces(face, face_feature)
                 # If the faces are similar
-                if sim > GALLERY_THRESHOLD:
+                if sim > threshold:
                     # Update the similarity score of the subject
                     names[subject] = names.get(subject, 0) + sim
     # So we have in names all the possible names (above threshold) and their cumulative similarity score

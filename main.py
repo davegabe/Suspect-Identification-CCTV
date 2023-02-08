@@ -1,4 +1,6 @@
+import json
 from multiprocessing import Queue
+from time import time
 import os
 import cv2
 import numpy as np
@@ -8,7 +10,7 @@ from modules.drawing_module import GUI
 from modules.evaluation_module import evaluate_system
 from modules.gallery_module import Identity, build_gallery, Identity
 from modules.decision_module import decide_identities
-from config import TEST_PATH, TEST_SCENARIO, TEST_SCENARIO2, UNKNOWN_SIMILARITY_THRESHOLD, MAX_CAMERAS, SEED, USE_GUI
+from config import TEST_PATH, TEST_SCENARIO, TEST_SCENARIO2, UNKNOWN_SIMILARITY_THRESHOLD, MAX_CAMERAS, SEED, USE_GUI, GALLERY_THRESHOLD
 
 def handle_gui_communication(all_camera_images: list[list[np.ndarray]], unknown_identities: list[Identity], known_identities: list[Identity], requests_queue: Queue, responses_queue: Queue, curr_frame: int):
     """
@@ -40,7 +42,7 @@ def handle_gui_communication(all_camera_images: list[list[np.ndarray]], unknown_
             responses_queue.put((camera_img, known_identities, unknown_identities))
 
 
-def handle_frame(camera_images: list[np.ndarray], gallery: dict, unknown_identities: list[Identity], known_identities: list[Identity], frame: int, frame_name: str):
+def handle_frame(camera_images: list[np.ndarray], gallery: dict, unknown_identities: list[Identity], known_identities: list[Identity], frame_name: str, gallery_threshold = GALLERY_THRESHOLD):
     """
     This function handles a frame, extracting the faces, matching them with the identities and updating the identities.
 
@@ -80,7 +82,7 @@ def handle_frame(camera_images: list[np.ndarray], gallery: dict, unknown_identit
         if unknown_identity not in found_identities:
             unknown_identity.max_missing_frames -= 1
     # Decision module
-    unknown_identities, known_identities = decide_identities(unknown_identities, known_identities, gallery)
+    unknown_identities, known_identities = decide_identities(unknown_identities, known_identities, gallery, gallery_threshold)
 
 def main():
     np.random.seed(SEED) # ඞ
@@ -115,19 +117,20 @@ def main():
 
     for i, frame_name in enumerate(all_frames_no_cameras):
         print(f"Current frame: {frame_name}")
-        handle_frame(all_camera_images[i], gallery, unknown_identities, known_identities, i, frame_name)
+        handle_frame(all_camera_images[i], gallery, unknown_identities, known_identities, frame_name)
         if USE_GUI:
             handle_gui_communication(all_camera_images, unknown_identities, known_identities, requests_queue, responses_queue, i)
 
     # Force last decision
-    unknown_identities, known_identities = decide_identities(unknown_identities, known_identities, gallery, force=True)
+    unknown_identities, known_identities = decide_identities(unknown_identities, known_identities, gallery, GALLERY_THRESHOLD, force=True)
 
     # Evaluate the results
     all_frames_cameras = []
     for i in range(MAX_CAMERAS):
         for frame in map(lambda x: x.split(".")[0], frames_reduced):
             all_frames_cameras.append(f"{i+1}_{frame}")
-    evaluate_system(known_identities, unknown_identities, [os.path.join("data/groundtruth/", f"{TEST_SCENARIO}_C{i+1}{TEST_SCENARIO2}.xml") for i in range(MAX_CAMERAS)], all_frames_cameras, gallery)
+    groundtruth_paths = [os.path.join("data/groundtruth/", f"{TEST_SCENARIO}_C{i+1}{TEST_SCENARIO2}.xml") for i in range(MAX_CAMERAS)]
+    evaluate_system(known_identities, unknown_identities, groundtruth_paths, all_frames_cameras, gallery)
     
     # Wait for the GUI to close while communicating with it
     while True and USE_GUI:
@@ -135,6 +138,76 @@ def main():
         if not guip.is_alive():
             break
         
+def evaluate_all():
+    with open("evaluation_results.txt", "a+") as f:
+        f.write(f"SESSION {time()}\n")
+    np.random.seed(SEED) # ඞ
+    data_path = "data/"
+
+    protocols = {
+    "P1E": ["S1", "S2", "S3", "S4"],
+    "P1L": ["S1", "S2", "S3", "S4"],
+    "P2E": ["S1", "S2", "S3", "S4"],
+    "P2L": ["S1", "S2", "S3", "S4"],
+    }
+
+    thresholds = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
+    
+    scenarios: list[tuple[str, str]] = []
+    for environment in protocols: # P1E, P1L, P2E, P2L
+        env_scenarios = protocols[environment]
+        # We append to scenarios the corresponding folders to env_scenarios
+        for scenario in env_scenarios: # S1, S2, S3, S4
+            path_env_scenario = f"{environment}_{scenario}"
+            if environment in ["P2E", "P2L"]:
+                scenarios.append((environment, path_env_scenario, ".1"))
+                scenarios.append((environment, path_env_scenario, ".2"))
+            else:
+                scenarios.append((environment, path_env_scenario, ""))
+
+    # For each environment
+    for environment, scenario, suffix_scenario in scenarios:
+        # For each threshold
+        for threshold in thresholds:
+            # Build the gallery
+            print("Building the gallery...")
+            gallery = build_gallery()
+
+            # Initialize the identities
+            unknown_identities: list[Identity] = [] # temporary identities which don't have a label yet
+            known_identities: list[Identity] = [] # permanent identities which have a label
+
+            # Load all frames
+            print("Loading frames...")
+            paths = [ os.path.join(data_path, environment, f"{scenario}_C{i+1}{suffix_scenario}") for i in range(MAX_CAMERAS)] # paths of the cameras
+            print(paths, threshold)
+            frames = list(filter(lambda x: x.endswith(".jpg"), os.listdir(paths[0]))) # frames of the cameras
+            frames = sorted(frames)
+            frames_reduced = frames[:] # frames to be processed
+            all_camera_images = [[cv2.imread(os.path.join(path, frame)) for path in paths] for frame in frames_reduced] # images of the cameras
+
+            all_frames_no_cameras = list(map(lambda x: x.split(".")[0], frames_reduced))
+
+            for i, frame_name in enumerate(all_frames_no_cameras):
+                print(f"Current frame: {frame_name}")
+                handle_frame(all_camera_images[i], gallery, unknown_identities, known_identities, frame_name, threshold)
+
+            # Force last decision
+            unknown_identities, known_identities = decide_identities(unknown_identities, known_identities, gallery, threshold, force=True)
+
+            # Evaluate the results
+            all_frames_cameras = []
+            for i in range(MAX_CAMERAS):
+                for frame in map(lambda x: x.split(".")[0], frames_reduced):
+                    all_frames_cameras.append(f"{i+1}_{frame}")
+            groundtruth_paths = [os.path.join("data/groundtruth/", f"{scenario}_C{i+1}{suffix_scenario}.xml") for i in range(MAX_CAMERAS)]
+            eval_res = evaluate_system(known_identities, unknown_identities, groundtruth_paths, all_frames_cameras, gallery)
+
+            
+            with open("evaluation_results.txt", "a+") as f:
+                f.write(f"SCENARIO: {environment}_{scenario}{suffix_scenario}, THRESHOLD: {threshold}\n")
+                f.write(json.dumps(eval_res) + "\n")
 
 if __name__ == "__main__":
-    main()
+    # main()
+    evaluate_all()

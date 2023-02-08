@@ -1,9 +1,10 @@
 import numpy as np
 
 from modules.gallery_module import Identity, check_identity
+from config import GALLERY_THRESHOLD
 
 
-def decide_identities(unknown_identities: list[Identity], known_identities: list[Identity], gallery: list[Identity], force: bool = False) -> tuple[list[Identity], list[Identity]]:
+def decide_identities(unknown_identities: list[Identity], known_identities: list[Identity], gallery: list[Identity], threshold: float, force: bool = False) -> tuple[list[Identity], list[Identity]]:
     """
     Decide the identities of the unknown identities based on the known identities.
 
@@ -24,7 +25,7 @@ def decide_identities(unknown_identities: list[Identity], known_identities: list
         if not unknown_identity.is_in_scene() or force:
             # We have to check if the face is similar to an unknown identity
             unknown_selected_faces: list[np.ndarray] = unknown_identity.get_biggest_faces()
-            ranked_names: list[str] = check_identity(gallery, unknown_selected_faces)
+            ranked_names: list[str] = check_identity(gallery, unknown_selected_faces, threshold)
             # If there are no similar faces above the threshold, we keep the identity as unknown
             if len(ranked_names) == 0:
                 continue

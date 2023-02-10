@@ -23,9 +23,11 @@ def build_gallery(faces_path: str = "") -> dict[str, list[np.ndarray]]:
         for name in os.listdir(os.path.join(GALLERY_PATH, folder)):
             if not name.endswith(".JPG"):
                 continue
-            # Create a list of images
+            # Get the id of the person
             id = name.split(".")[0].split("ID")[1]
-            # For each image
+            # If the person was not chosen, skip it
+            if id not in faces:
+                continue
             img = cv2.imread(os.path.join(GALLERY_PATH, folder, name))
             # Get features of the name
             face_feature, bboxes, kps = get_face(img)

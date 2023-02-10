@@ -185,13 +185,14 @@ def evaluate_all():
             frames = list(filter(lambda x: x.endswith(".jpg"), os.listdir(paths[0]))) # frames of the cameras
             frames = sorted(frames)
             frames_reduced = frames[:] # frames to be processed
-            all_camera_images = [[cv2.imread(os.path.join(path, frame)) for path in paths] for frame in frames_reduced] # images of the cameras
+            # all_camera_images = [[cv2.imread(os.path.join(path, frame)) for path in paths] for frame in frames_reduced] # images of the cameras
 
             all_frames_no_cameras = list(map(lambda x: x.split(".")[0], frames_reduced))
 
             for i, frame_name in enumerate(all_frames_no_cameras):
                 print(f"Current frame: {frame_name}")
-                handle_frame(all_camera_images[i], gallery, unknown_identities, known_identities, frame_name, threshold)
+                all_camera_image = [cv2.imread(os.path.join(path, frames[i])) for path in paths]
+                handle_frame(all_camera_image, gallery, unknown_identities, known_identities, frame_name, threshold)
 
             # Force last decision
             unknown_identities, known_identities = decide_identities(unknown_identities, known_identities, gallery, threshold, force=True)
@@ -210,7 +211,6 @@ def evaluate_all():
                 f.write(json.dumps(eval_res) + "\n")
 
             # Attempt to free memory
-            del all_camera_images
             del unknown_identities
             del known_identities
             del all_frames_no_cameras

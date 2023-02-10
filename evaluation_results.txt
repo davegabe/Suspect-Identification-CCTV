@@ -1,81 +1,3 @@
-SESSION 1675878971.9312415
-SESSION 1675879214.6543574
-SCENARIO: P1E_P1E_S1, THRESHOLD: 0.1
-{"far": 0.9541907024092298, "frr": 0.0, "dir": {"0": 1.0}, "genuine_rejections": 135, "false_rejections": 0, "false_acceptances": 2781, "n_genuine_faces": 1163, "n_impostor_faces": 2947}
-SCENARIO: P1E_P1E_S1, THRESHOLD: 0.2
-{"far": 0.2573055028462998, "frr": 0.0, "dir": {"0": 1.0}, "genuine_rejections": 1883, "false_rejections": 0, "false_acceptances": 677, "n_genuine_faces": 1475, "n_impostor_faces": 2635}
-SCENARIO: P1E_P1E_S1, THRESHOLD: 0.225
-{"far": 0.11968560200071454, "frr": 0.0, "dir": {"0": 1.0}, "genuine_rejections": 2260, "false_rejections": 0, "false_acceptances": 334, "n_genuine_faces": 1311, "n_impostor_faces": 2799}
-SCENARIO: P1E_P1E_S1, THRESHOLD: 0.25
-{"far": 0.1031636863823934, "frr": 0.1048252911813644, "dir": {"0": 0.8951747088186356}, "genuine_rejections": 2477, "false_rejections": 126, "false_acceptances": 300, "n_genuine_faces": 1202, "n_impostor_faces": 2908}
-SCENARIO: P1E_P1E_S1, THRESHOLD: 0.275
-{"far": 0.2033096926713948, "frr": 0.0, "dir": {"0": 1.0}, "genuine_rejections": 2020, "false_rejections": 0, "false_acceptances": 515, "n_genuine_faces": 1572, "n_impostor_faces": 2538}
-SCENARIO: P1E_P1E_S1, THRESHOLD: 0.3
-{"far": 0.1804483645718486, "frr": 0.0, "dir": {"0": 1.0}, "genuine_rejections": 2228, "false_rejections": 0, "false_acceptances": 490, "n_genuine_faces": 1389, "n_impostor_faces": 2721}
-SCENARIO: P1E_P1E_S1, THRESHOLD: 0.4
-{"far": 0.20256058527663465, "frr": 0.048881955278211126, "dir": {"0": 0.9511180447217888}, "genuine_rejections": 1669, "false_rejections": 94, "false_acceptances": 442, "n_genuine_faces": 1923, "n_impostor_faces": 2187}
-SCENARIO: P1E_P1E_S1, THRESHOLD: 0.5
-{"far": 0.13756819953234606, "frr": 0.08160621761658031, "dir": {"0": 0.9183937823834197}, "genuine_rejections": 2009, "false_rejections": 126, "false_acceptances": 352, "n_genuine_faces": 1544, "n_impostor_faces": 2566}
-SCENARIO: P1E_P1E_S2, THRESHOLD: 0.1
-{"far": 1.333551769331586, "frr": 0.0, "dir": {"0": 1.0}, "genuine_rejections": 0, "false_rejections": 0, "false_acceptances": 2033, "n_genuine_faces": 1883, "n_impostor_faces": 1526}
-SCENARIO: P1E_P1E_S2, THRESHOLD: 0.2
-{"far": 0.5033407572383074, "frr": 0.0, "dir": {"0": 1.0}, "genuine_rejections": 790, "false_rejections": 0, "false_acceptances": 452, "n_genuine_faces": 2511, "n_impostor_faces": 898}
-SCENARIO: P1E_P1E_S2, THRESHOLD: 0.225
-{"far": 0.275284661754856, "frr": 0.0, "dir": {"0": 1.0}, "genuine_rejections": 1380, "false_rejections": 0, "false_acceptances": 411, "n_genuine_faces": 1916, "n_impostor_faces": 1493}
-SCENARIO: P1E_P1E_S2, THRESHOLD: 0.25
-{"far": 0.07487131492746842, "frr": 0.0, "dir": {"0": 1.0}, "genuine_rejections": 2137, "false_rejections": 0, "false_acceptances": 160, "n_genuine_faces": 1272, "n_impostor_faces": 2137}
-SCENARIO: P1E_P1E_S2, THRESHOLD: 0.275
-{"far": 0.22951807228915663, "frr": 0.0, "dir": {"0": 1.0}, "genuine_rejections": 1552, "false_rejections": 0, "false_acceptances": 381, "n_genuine_faces": 1749, "n_impostor_faces": 1660}
-SCENARIO: P1E_P1E_S2, THRESHOLD: 0.3
-{"far": 0.3049698795180723, "frr": 0.0, "dir": {"0": 1.0}, "genuine_rejections": 1215, "false_rejections": 0, "false_acceptances": 405, "n_genuine_faces": 2081, "n_impostor_faces": 1328}
-SCENARIO: P1E_P1E_S2, THRESHOLD: 0.4
-{"far": 0.12472283813747229, "frr": 0.0, "dir": {"0": 1.0}, "genuine_rejections": 1804, "false_rejections": 0, "false_acceptances": 225, "n_genuine_faces": 1605, "n_impostor_faces": 1804}
-SCENARIO: P1E_P1E_S2, THRESHOLD: 0.5
-{"far": 0.11648351648351649, "frr": 0.0, "dir": {"0": 1.0}, "genuine_rejections": 1820, "false_rejections": 0, "false_acceptances": 212, "n_genuine_faces": 1589, "n_impostor_faces": 1820}
-SCENARIO: P1E_P1E_S3, THRESHOLD: 0.1
-{"far": 1.5526506899055919, "frr": 0.0004514672686230248, "dir": {"0": 0.999548532731377}, "genuine_rejections": 0, "false_rejections": 1, "false_acceptances": 2136, "n_genuine_faces": 2215, "n_impostor_faces": 1377}
-SCENARIO: P1E_P1E_S3, THRESHOLD: 0.2
-{"far": 0.6352405721716515, "frr": 0.0, "dir": {"0": 1.0}, "genuine_rejections": 1039, "false_rejections": 0, "false_acceptances": 977, "n_genuine_faces": 2054, "n_impostor_faces": 1538}
-SCENARIO: P1E_P1E_S3, THRESHOLD: 0.225
-{"far": 0.34742120343839544, "frr": 0.0004553734061930783, "dir": {"0": 0.9995446265938069}, "genuine_rejections": 1303, "false_rejections": 1, "false_acceptances": 484, "n_genuine_faces": 2196, "n_impostor_faces": 1396}
-SCENARIO: P1E_P1E_S3, THRESHOLD: 0.25
-{"far": 0.23072562358276644, "frr": 0.0005470459518599562, "dir": {"0": 0.99945295404814}, "genuine_rejections": 1683, "false_rejections": 1, "false_acceptances": 407, "n_genuine_faces": 1828, "n_impostor_faces": 1764}
-SCENARIO: P1E_P1E_S3, THRESHOLD: 0.275
-{"far": 0.03686635944700461, "frr": 0.0, "dir": {"0": 1.0}, "genuine_rejections": 3037, "false_rejections": 0, "false_acceptances": 112, "n_genuine_faces": 554, "n_impostor_faces": 3038}
-SCENARIO: P1E_P1E_S3, THRESHOLD: 0.3
-{"far": 0.19584954604409857, "frr": 0.0004878048780487805, "dir": {"0": 0.9995121951219512}, "genuine_rejections": 1542, "false_rejections": 1, "false_acceptances": 302, "n_genuine_faces": 2050, "n_impostor_faces": 1542}
-SCENARIO: P1E_P1E_S3, THRESHOLD: 0.4
-{"far": 0.11301989150090416, "frr": 0.0007246376811594203, "dir": {"0": 0.9992753623188406}, "genuine_rejections": 2212, "false_rejections": 1, "false_acceptances": 250, "n_genuine_faces": 1380, "n_impostor_faces": 2212}
-SCENARIO: P1E_P1E_S3, THRESHOLD: 0.5
-{"far": 0.18429844097995546, "frr": 0.0, "dir": {"0": 1.0}, "genuine_rejections": 1795, "false_rejections": 0, "false_acceptances": 330, "n_genuine_faces": 1796, "n_impostor_faces": 1796}
-SCENARIO: P1E_P1E_S4, THRESHOLD: 0.1
-{"far": 1.281150159744409, "frr": 0.0006426735218508997, "dir": {"0": 0.9993573264781491}, "genuine_rejections": 115, "false_rejections": 1, "false_acceptances": 2406, "n_genuine_faces": 1556, "n_impostor_faces": 1878}
-SCENARIO: P1E_P1E_S4, THRESHOLD: 0.2
-{"far": 0.42515723270440253, "frr": 0.0, "dir": {"0": 1.0}, "genuine_rejections": 1246, "false_rejections": 0, "false_acceptances": 676, "n_genuine_faces": 1844, "n_impostor_faces": 1590}
-SCENARIO: P1E_P1E_S4, THRESHOLD: 0.225
-{"far": 0.27518593644354294, "frr": 0.0, "dir": {"0": 1.0}, "genuine_rejections": 1380, "false_rejections": 0, "false_acceptances": 407, "n_genuine_faces": 1955, "n_impostor_faces": 1479}
-SCENARIO: P1E_P1E_S4, THRESHOLD: 0.25
-{"far": 0.42513368983957217, "frr": 0.0, "dir": {"0": 1.0}, "genuine_rejections": 1010, "false_rejections": 0, "false_acceptances": 477, "n_genuine_faces": 2312, "n_impostor_faces": 1122}
-SCENARIO: P1E_P1E_S4, THRESHOLD: 0.275
-{"far": 0.1706102117061021, "frr": 0.0, "dir": {"0": 1.0}, "genuine_rejections": 2199, "false_rejections": 0, "false_acceptances": 411, "n_genuine_faces": 1025, "n_impostor_faces": 2409}
-SCENARIO: P1E_P1E_S4, THRESHOLD: 0.3
-{"far": 0.17670482827277254, "frr": 0.0007017543859649122, "dir": {"0": 0.9992982456140351}, "genuine_rejections": 1898, "false_rejections": 1, "false_acceptances": 355, "n_genuine_faces": 1425, "n_impostor_faces": 2009}
-SCENARIO: P1E_P1E_S4, THRESHOLD: 0.4
-{"far": 0.08840304182509506, "frr": 0.0887218045112782, "dir": {"0": 0.9112781954887218}, "genuine_rejections": 2104, "false_rejections": 118, "false_acceptances": 186, "n_genuine_faces": 1330, "n_impostor_faces": 2104}
-SCENARIO: P1E_P1E_S4, THRESHOLD: 0.5
-{"far": 0.11984171848501979, "frr": 0.07087087087087086, "dir": {"0": 0.9291291291291291}, "genuine_rejections": 1769, "false_rejections": 118, "false_acceptances": 212, "n_genuine_faces": 1665, "n_impostor_faces": 1769}
-SCENARIO: P1L_P1L_S1, THRESHOLD: 0.1
-{"far": 2.020327868852459, "frr": 0.001261564339781329, "dir": {"0": 0.9987384356602187}, "genuine_rejections": 162, "false_rejections": 3, "false_acceptances": 3069, "n_genuine_faces": 2378, "n_impostor_faces": 1525}
-SCENARIO: P1L_P1L_S1, THRESHOLD: 0.2
-{"far": 0.4978373702422145, "frr": 0.0, "dir": {"0": 1.0}, "genuine_rejections": 2002, "false_rejections": 0, "false_acceptances": 1151, "n_genuine_faces": 1591, "n_impostor_faces": 2312}
-
-
-
-
-
--------------------------------------
-
-SESSION 1675906640.3884232
 SCENARIO: P1E_P1E_S1, THRESHOLD: 0.1
 {"far": 0.9541907024092298, "frr": 0.0, "dir": {"0": 1.0}, "genuine_rejections": 135, "false_rejections": 0, "false_acceptances": 2781, "n_genuine_faces": 1163, "n_impostor_faces": 2947, "people_in_gallery": ["0003", "0013", "0019", "0022", "0010", "0009", "0027", "0011", "0014", "0004"]}
 SCENARIO: P1E_P1E_S1, THRESHOLD: 0.2
@@ -90,7 +12,6 @@ SCENARIO: P1E_P1E_S1, THRESHOLD: 0.6
 {"far": 0.12348401323042998, "frr": 0.06767458603311735, "dir": {"0": 0.9323254139668826}, "genuine_rejections": 2383, "false_rejections": 94, "false_acceptances": 335, "n_genuine_faces": 1389, "n_impostor_faces": 2721, "people_in_gallery": ["0003", "0013", "0016", "0019", "0022", "0018", "0006", "0026", "0027", "0020", "0011", "0014"]}
 SCENARIO: P1E_P1E_S1, THRESHOLD: 0.7
 {"far": 0.1673525377229081, "frr": 0.23036921476859074, "dir": {"0": 0.7696307852314093}, "genuine_rejections": 1746, "false_rejections": 443, "false_acceptances": 365, "n_genuine_faces": 1923, "n_impostor_faces": 2187, "people_in_gallery": ["0003", "0005", "0013", "0015", "0016", "0019", "0021", "0024", "0025", "0001", "0010", "0026", "0027", "0020", "0011", "0014"]}
-SESSION 1675908689.7394576
 SCENARIO: P1E_P1E_S1, THRESHOLD: 0.8
 {"far": 0.015609093993892093, "frr": 0.8435081685296647, "dir": {"0": 0.15649183147033535}, "genuine_rejections": 2887, "false_rejections": 981, "false_acceptances": 46, "n_genuine_faces": 1163, "n_impostor_faces": 2947, "people_in_gallery": ["0003", "0013", "0019", "0022", "0010", "0009", "0027", "0011", "0014", "0004"]}
 SCENARIO: P1E_P1E_S1, THRESHOLD: 0.9

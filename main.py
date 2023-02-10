@@ -90,7 +90,7 @@ def main():
 
     # Build the gallery
     print("Building the gallery...")
-    gallery = build_gallery()
+    gallery = build_gallery(os.path.join(f"{TEST_PATH}_faces", f"{TEST_SCENARIO}_C1"))
 
     # Initialize the identities
     unknown_identities: list[Identity] = [] # temporary identities which don't have a label yet
@@ -171,10 +171,9 @@ def evaluate_all():
     for environment, scenario, suffix_scenario in scenarios:
         # Build the gallery
         print("Building the gallery...")
-        gallery = build_gallery()
+        gallery = build_gallery(os.path.join(data_path, f"{environment}_faces", f"{scenario}_C1"))
         # For each threshold
         for threshold in thresholds:
-
             # Initialize the identities
             unknown_identities: list[Identity] = [] # temporary identities which don't have a label yet
             known_identities: list[Identity] = [] # permanent identities which have a label

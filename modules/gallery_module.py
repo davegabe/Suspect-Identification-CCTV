@@ -3,18 +3,23 @@ import numpy as np
 import cv2
 
 from insight_utilities.insight_interface import compareTwoFaces, get_face
-from config import GALLERY_PATH, GALLERY_THRESHOLD, MAX_MISSING_FRAMES, NUM_BEST_FACES, NUMBER_OF_LAST_FACES, MATCH_MODALITY
+from config import GALLERY_PATH, MAX_MISSING_FRAMES, NUM_BEST_FACES, NUMBER_OF_LAST_FACES, MATCH_MODALITY
 
 
-def build_gallery() -> dict[str, list[np.ndarray]]:
+def build_gallery(faces_path: str = "") -> dict[str, list[np.ndarray]]:
     """
     Build a gallery from the other environment.
     """
     folders = os.listdir(GALLERY_PATH)
     # Create a new gallery
     gallery: dict[str, list[np.ndarray]] = {}
-    # For each face in the gallery
+    # Faces to add to the gallery
+    faces: list[np.ndarray] = os.listdir(faces_path)
+    # We pick 50% of the faces from the groundtruth
+    faces = np.random.choice(faces, int(len(faces) / 2), replace=False)
+    # For each mood (Smile, Neutral)
     for folder in folders:
+        # For each person
         for name in os.listdir(os.path.join(GALLERY_PATH, folder)):
             if not name.endswith(".JPG"):
                 continue
@@ -30,13 +35,6 @@ def build_gallery() -> dict[str, list[np.ndarray]]:
             if id not in gallery:
                 gallery[id] = []
             gallery[id].append(face_feature)
-    # Remove some faces from the gallery
-    ids_to_remove = []
-    for id in gallery:
-        if np.random.random() < 0.5:
-            ids_to_remove.append(id)
-    for id in ids_to_remove:
-        gallery.pop(id)
     # Return the gallery
     return gallery
 

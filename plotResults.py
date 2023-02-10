@@ -6,6 +6,8 @@ import matplotlib.pyplot as plt
 import matplotlib
 import json
 from pprint import pprint
+import numpy
+import numpy as np
 
 def parseFile():
     pathFile = sys.argv[1]
@@ -30,47 +32,94 @@ def parseFile():
 
 
 
-if __name__ == "__main__":
-    info = parseFile()  
-    #the sum of n_genuine_faces and n_impostor_faces gives the number of frame. This will be used to do a weighted average
-    #for each threshold, I will compute the weighted average of the FAR and FRR
-
-    weights = {}
+def FARandFRR(info):
+    thresholds = {}
     for scenario in info:
-        FAR = 0
-        FRR = 0
         for threshold in info[scenario]:
+            if threshold not in thresholds:
+                thresholds[threshold] = []
             far = info[scenario][threshold]["far"]
             frr = info[scenario][threshold]["frr"]
             n_genuine_faces = info[scenario][threshold]["n_genuine_faces"]
             n_impostor_faces = info[scenario][threshold]["n_impostor_faces"]
-            #PER OGNI THREASHOLD, FACCIO LA MEAN TRA TUTTE LE FAR E FRR
-            #PER OGNI SCENARIO, FACCIO LA WEIGHTED TRA TUTTE LE FAR E FRR
-            FAR += far
-            FRR += frr
-            totalNumberOfFrames = n_genuine_faces + n_impostor_faces
-        FAR = FAR/9
-        FRR = FRR/9
-        weights[scenario] = (FAR, FRR, totalNumberOfFrames)
+            thresholds[threshold].append((far, frr, n_genuine_faces, n_impostor_faces))
+        
 
-    totalSum = 0
+    pprint(thresholds)
 
-    FRR = 0
-    FAR = 0
+    for threshold in thresholds:
+        far = 0
+        frr = 0
+        n_genuine_faces = 0
+        n_impostor_faces = 0
+        for far_, frr_, n_genuine_faces_, n_impostor_faces_ in thresholds[threshold]:
+            far += far_ * n_impostor_faces_
+            frr += frr_ * n_genuine_faces_
+            n_genuine_faces += n_genuine_faces_
+            n_impostor_faces += n_impostor_faces_
+        far /= n_impostor_faces
+        frr /= n_genuine_faces
+        thresholds[threshold] = (far, frr)
+    return thresholds
 
-    for entry in weights:
-        print(entry)
-        print(weights[entry])
-        totalSum += weights[entry][2]
-        FRR += weights[entry][1]*weights[entry][2]
-        FAR += weights[entry][0]*weights[entry][2]
 
-    FRR = FRR/totalSum
-    FAR = FAR/totalSum
-    print("FRR: " + str(FRR))
-    print("FAR: " + str(FAR))
+
+def plotFARandFRR(thresholds):
     
+    #plot the results in the same plot
+    plt.figure()
+    plt.title("FAR and FRR for different thresholds")
+    plt.xlabel("Threshold")
+    plt.ylabel("FAR and FRR")
+    plt.grid(True)
+    plt.plot(thresholds.keys(), [x[0] for x in thresholds.values()], 'r', label="FAR")
+    plt.plot(thresholds.keys(), [x[1] for x in thresholds.values()], 'b', label="FRR")
+    plt.legend()
+    plt.show()
 
+
+def computeERR(threshold):
+    EER = 0
+    minDiff = 1
+    for threshold in thresholds:
+        far = thresholds[threshold][0]
+        frr = thresholds[threshold][1]
+        diff = abs(far - frr)
+        if diff < minDiff:
+            minDiff = diff
+            EER = threshold
+    return EER
+
+
+if __name__ == "__main__":
+    info = parseFile()  
+
+    thresholds = FARandFRR(info)
+    plotFARandFRR(thresholds)
+    pprint(thresholds)  #TODO: scrivere l'output nel report
+    #compute the EER
+    EER = computeERR(thresholds)
+    #print("The EER is: " + str(EER))
+
+    #TODO: plottare la dir? magari la tronchiamo
+
+    #TODO: plottare la FRR e la FAR per ogni scenario
+
+    for scenario in info:
+        thresholds = FARandFRR({scenario: info[scenario]})
+        plotFARandFRR(thresholds)
+        pprint(thresholds)
+        
+
+
+
+
+
+
+
+
+
+            
 
 
 

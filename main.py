@@ -5,6 +5,7 @@ import os
 import cv2
 import numpy as np
 from insight_utilities.insight_interface import get_faces
+import gc
 
 from modules.drawing_module import GUI
 from modules.evaluation_module import evaluate_system
@@ -151,7 +152,8 @@ def evaluate_all():
     "P2L": ["S1", "S2", "S3", "S4"],
     }
 
-    thresholds = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
+    #thresholds = [0.1, 0.2, 0.225, 0.25, 0.275, 0.3, 0.4, 0.5]
+    thresholds = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8,  0.9]
     
     scenarios: list[tuple[str, str]] = []
     for environment in protocols: # P1E, P1L, P2E, P2L
@@ -207,6 +209,17 @@ def evaluate_all():
             with open("evaluation_results.txt", "a+") as f:
                 f.write(f"SCENARIO: {environment}_{scenario}{suffix_scenario}, THRESHOLD: {threshold}\n")
                 f.write(json.dumps(eval_res) + "\n")
+
+            # Attempt to free memory
+            del gallery
+            del all_camera_images
+            del unknown_identities
+            del known_identities
+            del all_frames_no_cameras
+            del all_frames_cameras
+            del frames_reduced
+            del frames
+            gc.collect()
 
 if __name__ == "__main__":
     # main()

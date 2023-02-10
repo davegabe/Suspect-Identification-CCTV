@@ -242,7 +242,7 @@ def evaluate_system(known_identities: list[Identity], unknown_identities: list[I
                         break # We found face associated to eyes coordinates of ground identity, so we can skip to next ground identity 
 
                 if not in_known: # If face is not in known we hope it is in unknown, and it is a false rejection (even if it is not in unknown it is a false rejection, but in that case face was not even detected)
-                    false_rejections[frame] = false_rejections.get(frame, []) + [kid]
+                    false_rejections[frame] = false_rejections.get(frame, []) + [git]
                     
         # Check for false acceptances (known ids that are not in the gallery)
         for kid in known_ids:
@@ -312,5 +312,6 @@ def evaluate_system(known_identities: list[Identity], unknown_identities: list[I
     result["false_acceptances"] = len(false_acceptances)
     result["n_genuine_faces"] = n_genuine_faces
     result["n_impostor_faces"] = n_impostor_faces
+    result["people_in_gallery"] = list(map(lambda x:x.name, filter(lambda x:not x.is_impostor, groundtruth_identities)))
     return result
 

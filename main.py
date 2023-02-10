@@ -169,11 +169,11 @@ def evaluate_all():
 
     # For each environment
     for environment, scenario, suffix_scenario in scenarios:
+        # Build the gallery
+        print("Building the gallery...")
+        gallery = build_gallery()
         # For each threshold
         for threshold in thresholds:
-            # Build the gallery
-            print("Building the gallery...")
-            gallery = build_gallery()
 
             # Initialize the identities
             unknown_identities: list[Identity] = [] # temporary identities which don't have a label yet
@@ -211,7 +211,6 @@ def evaluate_all():
                 f.write(json.dumps(eval_res) + "\n")
 
             # Attempt to free memory
-            del gallery
             del all_camera_images
             del unknown_identities
             del known_identities
@@ -220,6 +219,8 @@ def evaluate_all():
             del frames_reduced
             del frames
             gc.collect()
+        del gallery
+        gc.collect()
 
 if __name__ == "__main__":
     # main()

@@ -4,13 +4,14 @@ from time import time
 import os
 import cv2
 import numpy as np
-from insight_utilities.insight_interface import get_faces
 import gc
+from tqdm import tqdm
 
 from modules.drawing_module import GUI
 from modules.evaluation_module import evaluate_system
 from modules.gallery_module import Identity, build_gallery, Identity
 from modules.decision_module import decide_identities
+from insight_utilities.insight_interface import get_faces
 from config import TEST_PATH, TEST_SCENARIO, TEST_SCENARIO2, UNKNOWN_SIMILARITY_THRESHOLD, MAX_CAMERAS, SEED, USE_GUI, GALLERY_THRESHOLD
 
 def handle_gui_communication(all_camera_images: list[list[np.ndarray]], unknown_identities: list[Identity], known_identities: list[Identity], requests_queue: Queue, responses_queue: Queue, curr_frame: int):
@@ -176,6 +177,7 @@ def evaluate_all():
         gallery = build_gallery(os.path.join(data_path, f"{environment}_faces", f"{scenario}_C1"))
         # For each threshold
         for threshold in thresholds:
+            print(f"Environment: {environment}, Scenario: {scenario}, Threshold: {threshold}")
             # Initialize the identities
             unknown_identities: list[Identity] = [] # temporary identities which don't have a label yet
             known_identities: list[Identity] = [] # permanent identities which have a label
@@ -191,10 +193,11 @@ def evaluate_all():
 
             all_frames_no_cameras = list(map(lambda x: x.split(".")[0], frames_reduced))
 
-            for i, frame_name in enumerate(all_frames_no_cameras):
-                print(f"Current frame: {frame_name}")
+            i = 0
+            for frame_name in tqdm(all_frames_no_cameras):
                 all_camera_image = [cv2.imread(os.path.join(path, frames[i])) for path in paths]
                 handle_frame(all_camera_image, gallery, unknown_identities, known_identities, frame_name, threshold)
+                i += 1
 
             # Force last decision
             unknown_identities, known_identities = decide_identities(unknown_identities, known_identities, gallery, threshold, force=True)

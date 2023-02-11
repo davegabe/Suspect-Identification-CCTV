@@ -161,8 +161,10 @@ def evaluate_all():
         # We append to scenarios the corresponding folders to env_scenarios
         for scenario in env_scenarios: # S1, S2, S3, S4
             path_env_scenario = f"{environment}_{scenario}"
-            if environment in ["P2E", "P2L"]:
+            if environment in ["P2E"] or environment == "P2L" and scenario == "S4":
                 scenarios.append((environment, path_env_scenario, ".1"))
+                scenarios.append((environment, path_env_scenario, ".2"))
+            elif environment == "P2L":
                 scenarios.append((environment, path_env_scenario, ".2"))
             else:
                 scenarios.append((environment, path_env_scenario, ""))

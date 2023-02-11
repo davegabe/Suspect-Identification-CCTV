@@ -1062,6 +1062,7 @@
    <leftEye x="373" y="176" />
    <rightEye x="396" y="177" />
   </person>
+ </frame>
  <frame number="00000473">
   <person id="0013">
    <leftEye x="376" y="176" />
@@ -1079,6 +1080,7 @@
    <leftEye x="381" y="177" />
    <rightEye x="404" y="177" />
   </person>
+ </frame>
  <frame number="00000476">
   <person id="0013">
    <leftEye x="384" y="177" />

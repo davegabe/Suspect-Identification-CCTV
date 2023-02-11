@@ -45,6 +45,9 @@ class GroundTruthIdentity():
         n = sum([self.rank_postitions[i] for i in range(rank)])
         # Return the DIR
         return n / self.pg
+    
+    def __repr__(self) -> str:
+        return f"(Id: {self.name}, Impostor: {self.is_impostor})"
 
         
 

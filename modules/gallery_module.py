@@ -1,12 +1,13 @@
 import os
 import numpy as np
 import cv2
+import xml.etree.ElementTree as ET
 
 from insight_utilities.insight_interface import compareTwoFaces, get_face
 from config import GALLERY_PATH, MAX_MISSING_FRAMES, NUM_BEST_FACES, NUMBER_OF_LAST_FACES, MATCH_MODALITY
 
 
-def build_gallery(faces_path: str = "") -> dict[str, list[np.ndarray]]:
+def build_gallery(groundtruth_paths: list[str]) -> dict[str, list[np.ndarray]]:
     """
     Build a gallery from the other environment.
     """
@@ -14,9 +15,18 @@ def build_gallery(faces_path: str = "") -> dict[str, list[np.ndarray]]:
     # Create a new gallery
     gallery: dict[str, list[np.ndarray]] = {}
     # Faces to add to the gallery
-    faces: list[np.ndarray] = os.listdir(faces_path)
+    people: set[str] = set()
+
+    for groundtruth_path in groundtruth_paths:
+        tree = ET.parse(groundtruth_path)
+        for frame in tree.getroot():
+            for person in frame.findall("person"):
+                if person.attrib["id"] == "Unknown":
+                    continue
+                people.add(person.attrib["id"])
+
     # We pick 50% of the faces from the groundtruth
-    faces = np.random.choice(faces, int(len(faces) / 2), replace=False)
+    people = np.random.choice(list(people), int(len(people) / 2), replace=False)
     # For each mood (Smile, Neutral)
     for folder in folders:
         # For each person
@@ -26,7 +36,7 @@ def build_gallery(faces_path: str = "") -> dict[str, list[np.ndarray]]:
             # Get the id of the person
             id = name.split(".")[0].split("ID")[1]
             # If the person was not chosen, skip it
-            if id not in faces:
+            if id not in people:
                 continue
             img = cv2.imread(os.path.join(GALLERY_PATH, folder, name))
             # Get features of the name

@@ -1,5 +1,6 @@
 import json
 from multiprocessing import Queue
+from pprint import pprint
 from time import time
 import os
 import cv2
@@ -172,9 +173,10 @@ def evaluate_all():
 
     # For each environment
     for environment, scenario, suffix_scenario in scenarios:
+        groundtruth_paths = [os.path.join("data/groundtruth/", f"{scenario}_C{i+1}{suffix_scenario}.xml") for i in range(MAX_CAMERAS)]
         # Build the gallery
         print("Building the gallery...")
-        gallery = build_gallery(os.path.join(data_path, f"{environment}_faces", f"{scenario}_C1"))
+        gallery = build_gallery(groundtruth_paths)
         # For each threshold
         for threshold in thresholds:
             print(f"Environment: {environment}, Scenario: {scenario}, Threshold: {threshold}")
@@ -207,7 +209,6 @@ def evaluate_all():
             for i in range(MAX_CAMERAS):
                 for frame in map(lambda x: x.split(".")[0], frames_reduced):
                     all_frames_cameras.append(f"{i+1}_{frame}")
-            groundtruth_paths = [os.path.join("data/groundtruth/", f"{scenario}_C{i+1}{suffix_scenario}.xml") for i in range(MAX_CAMERAS)]
             eval_res = evaluate_system(known_identities, unknown_identities, groundtruth_paths, all_frames_cameras, gallery)
 
             

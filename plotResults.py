@@ -48,12 +48,13 @@ def FARandFRR(info):
     return thresholds
 
 
-def plotFARandFRR(thresholds):
+def plotFARandFRR(thresholds, scenario="all"):
     # plot the results in the same plot
     plt.figure()
-    plt.title("FAR and FRR for different thresholds")
+    plt.title("FAR and FRR for different thresholds SCENARIO: " + scenario)
     plt.xlabel("Threshold")
     plt.ylabel("FAR and FRR")
+    #set the title of the window
     plt.grid(True)
     plt.plot(thresholds.keys(), [x[0] for x in thresholds.values()], 'r', label="FAR")
     plt.plot(thresholds.keys(), [x[1] for x in thresholds.values()], 'b', label="FRR")
@@ -90,5 +91,5 @@ if __name__ == "__main__":
 
     for scenario in info:
         thresholds = FARandFRR({scenario: info[scenario]})
-        plotFARandFRR(thresholds)
+        plotFARandFRR(thresholds, scenario)
         pprint(thresholds)

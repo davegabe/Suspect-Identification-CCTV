@@ -1,4 +1,3 @@
-SESSION 1676131904.5121508
 SCENARIO: P1E_P1E_S1, THRESHOLD: 0.1
 {"far": 0.8789649415692822, "frr": 0.0017533606078316774, "dir": {"0": 0.9982466393921683, "1": 0.9988310929281122}, "genuine_rejections": 292, "false_rejections": 3, "false_acceptances": 2106, "n_genuine_faces": 1711, "n_impostor_faces": 2396, "people_in_gallery": ["0003", "0016", "0019", "0021", "0025", "0022", "0023", "0012", "0010", "0027", "0020", "0004"]}
 SCENARIO: P1E_P1E_S1, THRESHOLD: 0.2
@@ -103,7 +102,6 @@ SCENARIO: P1L_P1L_S2, THRESHOLD: 0.6
 {"far": 0.0006169031462060457, "frr": 0.08460787504067686, "dir": {"0": 0.9153921249593231}, "genuine_rejections": 3242, "false_rejections": 260, "false_acceptances": 1, "n_genuine_faces": 3073, "n_impostor_faces": 3242, "people_in_gallery": ["0014", "0020", "0003", "0001", "0015", "0010", "0006", "0009", "0004", "0024", "0022", "0023"]}
 SCENARIO: P1L_P1L_S2, THRESHOLD: 0.7
 {"far": 0.0, "frr": 0.47575658965180606, "dir": {"0": 0.524243410348194}, "genuine_rejections": 3242, "false_rejections": 1462, "false_acceptances": 0, "n_genuine_faces": 3073, "n_impostor_faces": 3242, "people_in_gallery": ["0014", "0020", "0003", "0001", "0015", "0010", "0006", "0009", "0004", "0024", "0022", "0023"]}
-SESSION 1676161672.4990823
 SCENARIO: P1L_P1L_S2, THRESHOLD: 0.8
 {"far": 0.0, "frr": 1.0, "dir": {"0": 0.0}, "genuine_rejections": 3154, "false_rejections": 3161, "false_acceptances": 0, "n_genuine_faces": 3161, "n_impostor_faces": 3154, "people_in_gallery": ["0014", "0020", "0005", "0011", "0021", "0027", "0026", "0019", "0007", "0013", "0001", "0006"]}
 SCENARIO: P1L_P1L_S2, THRESHOLD: 0.9
@@ -289,45 +287,45 @@ SCENARIO: P2E_P2E_S4.2, THRESHOLD: 0.8
 SCENARIO: P2E_P2E_S4.2, THRESHOLD: 0.9
 {"far": 0.0, "frr": 0.9048275862068965, "dir": {"0": 0.0}, "genuine_rejections": 1007, "false_rejections": 656, "false_acceptances": 0, "n_genuine_faces": 725, "n_impostor_faces": 1071, "people_in_gallery": ["0022", "0002"]}
 SCENARIO: P2L_P2L_S1.2, THRESHOLD: 0.1
-{"far": 0.5902702702702702, "frr": 0.001336898395721925, "dir": {"0": 0.9986631016042781}, "genuine_rejections": 354, "false_rejections": 1, "false_acceptances": 526, "n_genuine_faces": 748, "n_impostor_faces": 925, "people_in_gallery": ["0003", "0022"]}
+{"far": 1.0, "frr": 0.0, "dir": {"0": 1.0}, "genuine_rejections": 0, "false_rejections": 0, "false_acceptances": 1215, "n_genuine_faces": 374, "n_impostor_faces": 1299, "people_in_gallery": ["0015"]}
 SCENARIO: P2L_P2L_S1.2, THRESHOLD: 0.2
-{"far": 0.18594594594594593, "frr": 0.001336898395721925, "dir": {"0": 0.9986631016042781}, "genuine_rejections": 708, "false_rejections": 1, "false_acceptances": 172, "n_genuine_faces": 748, "n_impostor_faces": 925, "people_in_gallery": ["0003", "0022"]}
+{"far": 0.0007698229407236335, "frr": 0.0, "dir": {"0": 1.0}, "genuine_rejections": 1215, "false_rejections": 0, "false_acceptances": 1, "n_genuine_faces": 374, "n_impostor_faces": 1299, "people_in_gallery": ["0015"]}
 SCENARIO: P2L_P2L_S1.2, THRESHOLD: 0.3
-{"far": 0.18594594594594593, "frr": 0.001336898395721925, "dir": {"0": 0.9986631016042781}, "genuine_rejections": 708, "false_rejections": 1, "false_acceptances": 172, "n_genuine_faces": 748, "n_impostor_faces": 925, "people_in_gallery": ["0003", "0022"]}
+{"far": 0.0007698229407236335, "frr": 0.0, "dir": {"0": 1.0}, "genuine_rejections": 1215, "false_rejections": 0, "false_acceptances": 1, "n_genuine_faces": 374, "n_impostor_faces": 1299, "people_in_gallery": ["0015"]}
 SCENARIO: P2L_P2L_S1.2, THRESHOLD: 0.4
-{"far": 0.18594594594594593, "frr": 0.01871657754010695, "dir": {"0": 0.9812834224598931}, "genuine_rejections": 708, "false_rejections": 14, "false_acceptances": 172, "n_genuine_faces": 748, "n_impostor_faces": 925, "people_in_gallery": ["0003", "0022"]}
+{"far": 0.0007698229407236335, "frr": 0.0, "dir": {"0": 1.0}, "genuine_rejections": 1215, "false_rejections": 0, "false_acceptances": 1, "n_genuine_faces": 374, "n_impostor_faces": 1299, "people_in_gallery": ["0015"]}
 SCENARIO: P2L_P2L_S1.2, THRESHOLD: 0.5
-{"far": 0.18594594594594593, "frr": 0.01871657754010695, "dir": {"0": 0.9812834224598931}, "genuine_rejections": 708, "false_rejections": 14, "false_acceptances": 172, "n_genuine_faces": 748, "n_impostor_faces": 925, "people_in_gallery": ["0003", "0022"]}
+{"far": 0.0007698229407236335, "frr": 0.0, "dir": {"0": 1.0}, "genuine_rejections": 1215, "false_rejections": 0, "false_acceptances": 1, "n_genuine_faces": 374, "n_impostor_faces": 1299, "people_in_gallery": ["0015"]}
 SCENARIO: P2L_P2L_S1.2, THRESHOLD: 0.6
-{"far": 0.18594594594594593, "frr": 0.001336898395721925, "dir": {"0": 0.9986631016042781}, "genuine_rejections": 708, "false_rejections": 1, "false_acceptances": 172, "n_genuine_faces": 748, "n_impostor_faces": 925, "people_in_gallery": ["0003", "0022"]}
+{"far": 0.0007698229407236335, "frr": 0.05080213903743316, "dir": {"0": 0.9491978609625669}, "genuine_rejections": 1215, "false_rejections": 19, "false_acceptances": 1, "n_genuine_faces": 374, "n_impostor_faces": 1299, "people_in_gallery": ["0015"]}
 SCENARIO: P2L_P2L_S1.2, THRESHOLD: 0.7
-{"far": 0.18594594594594593, "frr": 0.6564171122994652, "dir": {"0": 0.2914438502673797}, "genuine_rejections": 708, "false_rejections": 491, "false_acceptances": 172, "n_genuine_faces": 748, "n_impostor_faces": 925, "people_in_gallery": ["0003", "0022"]}
+{"far": 0.0007698229407236335, "frr": 0.09893048128342247, "dir": {"0": 0.9010695187165776}, "genuine_rejections": 1215, "false_rejections": 37, "false_acceptances": 1, "n_genuine_faces": 374, "n_impostor_faces": 1299, "people_in_gallery": ["0015"]}
 SCENARIO: P2L_P2L_S1.2, THRESHOLD: 0.8
-{"far": 0.0, "frr": 0.9318181818181818, "dir": {"0": 0.0}, "genuine_rejections": 872, "false_rejections": 697, "false_acceptances": 0, "n_genuine_faces": 748, "n_impostor_faces": 925, "people_in_gallery": ["0003", "0022"]}
+{"far": 0.0, "frr": 0.946524064171123, "dir": {"0": 0.0}, "genuine_rejections": 1215, "false_rejections": 354, "false_acceptances": 0, "n_genuine_faces": 374, "n_impostor_faces": 1299, "people_in_gallery": ["0015"]}
 SCENARIO: P2L_P2L_S1.2, THRESHOLD: 0.9
-{"far": 0.0, "frr": 0.9318181818181818, "dir": {"0": 0.0}, "genuine_rejections": 872, "false_rejections": 697, "false_acceptances": 0, "n_genuine_faces": 748, "n_impostor_faces": 925, "people_in_gallery": ["0003", "0022"]}
+{"far": 0.0, "frr": 0.946524064171123, "dir": {"0": 0.0}, "genuine_rejections": 1215, "false_rejections": 354, "false_acceptances": 0, "n_genuine_faces": 374, "n_impostor_faces": 1299, "people_in_gallery": ["0015"]}
 SCENARIO: P2L_P2L_S2.2, THRESHOLD: 0.1
-{"far": 0.5106928999144568, "frr": 0.0, "dir": {"0": 1.0}, "genuine_rejections": 553, "false_rejections": 0, "false_acceptances": 521, "n_genuine_faces": 946, "n_impostor_faces": 1169, "people_in_gallery": ["0015", "0003"]}
+{"far": 1.0, "frr": 0.0, "dir": {"0": 1.0}, "genuine_rejections": 0, "false_rejections": 0, "false_acceptances": 1017, "n_genuine_faces": 853, "n_impostor_faces": 1262, "people_in_gallery": ["0022", "0015"]}
 SCENARIO: P2L_P2L_S2.2, THRESHOLD: 0.2
-{"far": 0.3028229255774166, "frr": 0.0, "dir": {"0": 1.0}, "genuine_rejections": 744, "false_rejections": 0, "false_acceptances": 354, "n_genuine_faces": 946, "n_impostor_faces": 1169, "people_in_gallery": ["0015", "0003"]}
+{"far": 0.687797147385103, "frr": 0.0492379835873388, "dir": {"0": 0.9507620164126612}, "genuine_rejections": 382, "false_rejections": 42, "false_acceptances": 778, "n_genuine_faces": 853, "n_impostor_faces": 1262, "people_in_gallery": ["0022", "0015"]}
 SCENARIO: P2L_P2L_S2.2, THRESHOLD: 0.3
-{"far": 0.1454234388366125, "frr": 0.16701902748414377, "dir": {"0": 0.8329809725158562}, "genuine_rejections": 858, "false_rejections": 158, "false_acceptances": 170, "n_genuine_faces": 946, "n_impostor_faces": 1169, "people_in_gallery": ["0015", "0003"]}
+{"far": 0.000792393026941363, "frr": 0.12895662368112543, "dir": {"0": 0.8710433763188745}, "genuine_rejections": 1017, "false_rejections": 110, "false_acceptances": 1, "n_genuine_faces": 853, "n_impostor_faces": 1262, "people_in_gallery": ["0022", "0015"]}
 SCENARIO: P2L_P2L_S2.2, THRESHOLD: 0.4
-{"far": 0.1454234388366125, "frr": 0.16701902748414377, "dir": {"0": 0.8329809725158562}, "genuine_rejections": 858, "false_rejections": 158, "false_acceptances": 170, "n_genuine_faces": 946, "n_impostor_faces": 1169, "people_in_gallery": ["0015", "0003"]}
+{"far": 0.000792393026941363, "frr": 0.12895662368112543, "dir": {"0": 0.8710433763188745}, "genuine_rejections": 1017, "false_rejections": 110, "false_acceptances": 1, "n_genuine_faces": 853, "n_impostor_faces": 1262, "people_in_gallery": ["0022", "0015"]}
 SCENARIO: P2L_P2L_S2.2, THRESHOLD: 0.5
-{"far": 0.3028229255774166, "frr": 0.04439746300211417, "dir": {"0": 0.9556025369978859}, "genuine_rejections": 744, "false_rejections": 42, "false_acceptances": 354, "n_genuine_faces": 946, "n_impostor_faces": 1169, "people_in_gallery": ["0015", "0003"]}
+{"far": 0.14659270998415214, "frr": 0.09378663540445487, "dir": {"0": 0.9062133645955451}, "genuine_rejections": 903, "false_rejections": 80, "false_acceptances": 185, "n_genuine_faces": 853, "n_impostor_faces": 1262, "people_in_gallery": ["0022", "0015"]}
 SCENARIO: P2L_P2L_S2.2, THRESHOLD: 0.6
-{"far": 0.3028229255774166, "frr": 0.07188160676532769, "dir": {"0": 0.9281183932346723}, "genuine_rejections": 744, "false_rejections": 68, "false_acceptances": 354, "n_genuine_faces": 946, "n_impostor_faces": 1169, "people_in_gallery": ["0015", "0003"]}
+{"far": 0.000792393026941363, "frr": 0.12895662368112543, "dir": {"0": 0.8710433763188745}, "genuine_rejections": 1017, "false_rejections": 110, "false_acceptances": 1, "n_genuine_faces": 853, "n_impostor_faces": 1262, "people_in_gallery": ["0022", "0015"]}
 SCENARIO: P2L_P2L_S2.2, THRESHOLD: 0.7
-{"far": 0.1454234388366125, "frr": 0.22727272727272727, "dir": {"0": 0.7727272727272727}, "genuine_rejections": 858, "false_rejections": 215, "false_acceptances": 170, "n_genuine_faces": 946, "n_impostor_faces": 1169, "people_in_gallery": ["0015", "0003"]}
+{"far": 0.000792393026941363, "frr": 0.19577960140679954, "dir": {"0": 0.8042203985932005}, "genuine_rejections": 1017, "false_rejections": 167, "false_acceptances": 1, "n_genuine_faces": 853, "n_impostor_faces": 1262, "people_in_gallery": ["0022", "0015"]}
 SCENARIO: P2L_P2L_S2.2, THRESHOLD: 0.8
-{"far": 0.0, "frr": 0.8329809725158562, "dir": {"0": 0.0}, "genuine_rejections": 955, "false_rejections": 788, "false_acceptances": 0, "n_genuine_faces": 946, "n_impostor_faces": 1169, "people_in_gallery": ["0015", "0003"]}
+{"far": 0.0, "frr": 0.8534583821805393, "dir": {"0": 0.0}, "genuine_rejections": 1017, "false_rejections": 728, "false_acceptances": 0, "n_genuine_faces": 853, "n_impostor_faces": 1262, "people_in_gallery": ["0022", "0015"]}
 SCENARIO: P2L_P2L_S2.2, THRESHOLD: 0.9
-{"far": 0.0, "frr": 0.8329809725158562, "dir": {"0": 0.0}, "genuine_rejections": 955, "false_rejections": 788, "false_acceptances": 0, "n_genuine_faces": 946, "n_impostor_faces": 1169, "people_in_gallery": ["0015", "0003"]}
+{"far": 0.0, "frr": 0.8534583821805393, "dir": {"0": 0.0}, "genuine_rejections": 1017, "false_rejections": 728, "false_acceptances": 0, "n_genuine_faces": 853, "n_impostor_faces": 1262, "people_in_gallery": ["0022", "0015"]}
 SCENARIO: P2L_P2L_S3.2, THRESHOLD: 0.1
-{"far": 0.08891013384321224, "frr": 0.0, "dir": {"0": 1.0}, "genuine_rejections": 872, "false_rejections": 0, "false_acceptances": 93, "n_genuine_faces": 918, "n_impostor_faces": 1046, "people_in_gallery": ["0021", "0022"]}
+{"far": 0.9990439770554493, "frr": 0.0010893246187363835, "dir": {"0": 0.9989106753812637}, "genuine_rejections": 1, "false_rejections": 1, "false_acceptances": 915, "n_genuine_faces": 918, "n_impostor_faces": 1046, "people_in_gallery": ["0021", "0022"]}
 SCENARIO: P2L_P2L_S3.2, THRESHOLD: 0.2
-{"far": 0.03441682600382409, "frr": 0.0, "dir": {"0": 1.0}, "genuine_rejections": 916, "false_rejections": 0, "false_acceptances": 36, "n_genuine_faces": 918, "n_impostor_faces": 1046, "people_in_gallery": ["0021", "0022"]}
+{"far": 0.4789674952198853, "frr": 0.0, "dir": {"0": 1.0}, "genuine_rejections": 462, "false_rejections": 0, "false_acceptances": 454, "n_genuine_faces": 918, "n_impostor_faces": 1046, "people_in_gallery": ["0021", "0022"]}
 SCENARIO: P2L_P2L_S3.2, THRESHOLD: 0.3
 {"far": 0.03441682600382409, "frr": 0.0, "dir": {"0": 1.0}, "genuine_rejections": 916, "false_rejections": 0, "false_acceptances": 36, "n_genuine_faces": 918, "n_impostor_faces": 1046, "people_in_gallery": ["0021", "0022"]}
 SCENARIO: P2L_P2L_S3.2, THRESHOLD: 0.4
@@ -343,38 +341,38 @@ SCENARIO: P2L_P2L_S3.2, THRESHOLD: 0.8
 SCENARIO: P2L_P2L_S3.2, THRESHOLD: 0.9
 {"far": 0.0, "frr": 0.8954248366013072, "dir": {"0": 0.0}, "genuine_rejections": 916, "false_rejections": 822, "false_acceptances": 0, "n_genuine_faces": 918, "n_impostor_faces": 1046, "people_in_gallery": ["0021", "0022"]}
 SCENARIO: P2L_P2L_S4.1, THRESHOLD: 0.1
-{"far": 0.8574808882417182, "frr": 0.011799410029498525, "dir": {"0": 0.9882005899705014}, "genuine_rejections": 768, "false_rejections": 52, "false_acceptances": 4103, "n_genuine_faces": 4407, "n_impostor_faces": 5494, "people_in_gallery": ["0014", "0029", "0023", "0026", "0006", "0010", "0007", "0001", "0018", "0016", "0012", "0004"]}
+{"far": 0.9998210450966356, "frr": 0.006492000927428704, "dir": {"0": 0.9935079990725713, "1": 0.9937398562485509, "2": 0.9974495710642244}, "genuine_rejections": 1, "false_rejections": 28, "false_acceptances": 5050, "n_genuine_faces": 4313, "n_impostor_faces": 5588, "people_in_gallery": ["0013", "0005", "0029", "0011", "0025", "0027", "0002", "0006", "0018", "0012", "0004"]}
 SCENARIO: P2L_P2L_S4.1, THRESHOLD: 0.2
-{"far": 0.08991627229705133, "frr": 0.038348082595870206, "dir": {"0": 0.9616519174041298}, "genuine_rejections": 4523, "false_rejections": 169, "false_acceptances": 494, "n_genuine_faces": 4407, "n_impostor_faces": 5494, "people_in_gallery": ["0014", "0029", "0023", "0026", "0006", "0010", "0007", "0001", "0018", "0016", "0012", "0004"]}
+{"far": 0.10790980672870437, "frr": 0.04892186413169487, "dir": {"0": 0.9510781358683051}, "genuine_rejections": 4587, "false_rejections": 211, "false_acceptances": 571, "n_genuine_faces": 4313, "n_impostor_faces": 5588, "people_in_gallery": ["0013", "0005", "0029", "0011", "0025", "0027", "0002", "0006", "0018", "0012", "0004"]}
 SCENARIO: P2L_P2L_S4.1, THRESHOLD: 0.3
-{"far": 0.009464870768110666, "frr": 0.05105513955071477, "dir": {"0": 0.9489448604492853}, "genuine_rejections": 4802, "false_rejections": 225, "false_acceptances": 52, "n_genuine_faces": 4407, "n_impostor_faces": 5494, "people_in_gallery": ["0014", "0029", "0023", "0026", "0006", "0010", "0007", "0001", "0018", "0016", "0012", "0004"]}
+{"far": 0.022727272727272728, "frr": 0.07581729654532808, "dir": {"0": 0.9241827034546719}, "genuine_rejections": 5046, "false_rejections": 327, "false_acceptances": 127, "n_genuine_faces": 4313, "n_impostor_faces": 5588, "people_in_gallery": ["0013", "0005", "0029", "0011", "0025", "0027", "0002", "0006", "0018", "0012", "0004"]}
 SCENARIO: P2L_P2L_S4.1, THRESHOLD: 0.4
-{"far": 0.009464870768110666, "frr": 0.05105513955071477, "dir": {"0": 0.9489448604492853}, "genuine_rejections": 4802, "false_rejections": 225, "false_acceptances": 52, "n_genuine_faces": 4407, "n_impostor_faces": 5494, "people_in_gallery": ["0014", "0029", "0023", "0026", "0006", "0010", "0007", "0001", "0018", "0016", "0012", "0004"]}
+{"far": 0.020937723693629205, "frr": 0.08323672617667517, "dir": {"0": 0.9167632738233248}, "genuine_rejections": 5046, "false_rejections": 359, "false_acceptances": 117, "n_genuine_faces": 4313, "n_impostor_faces": 5588, "people_in_gallery": ["0013", "0005", "0029", "0011", "0025", "0027", "0002", "0006", "0018", "0012", "0004"]}
 SCENARIO: P2L_P2L_S4.1, THRESHOLD: 0.5
-{"far": 0.009464870768110666, "frr": 0.05105513955071477, "dir": {"0": 0.9489448604492853}, "genuine_rejections": 4802, "false_rejections": 225, "false_acceptances": 52, "n_genuine_faces": 4407, "n_impostor_faces": 5494, "people_in_gallery": ["0014", "0029", "0023", "0026", "0006", "0010", "0007", "0001", "0018", "0016", "0012", "0004"]}
+{"far": 0.020937723693629205, "frr": 0.08323672617667517, "dir": {"0": 0.9167632738233248}, "genuine_rejections": 5046, "false_rejections": 359, "false_acceptances": 117, "n_genuine_faces": 4313, "n_impostor_faces": 5588, "people_in_gallery": ["0013", "0005", "0029", "0011", "0025", "0027", "0002", "0006", "0018", "0012", "0004"]}
 SCENARIO: P2L_P2L_S4.1, THRESHOLD: 0.6
-{"far": 0.009464870768110666, "frr": 0.5203085999546176, "dir": {"0": 0.43862037667347403}, "genuine_rejections": 4802, "false_rejections": 2293, "false_acceptances": 52, "n_genuine_faces": 4407, "n_impostor_faces": 5494, "people_in_gallery": ["0014", "0029", "0023", "0026", "0006", "0010", "0007", "0001", "0018", "0016", "0012", "0004"]}
+{"far": 0.020937723693629205, "frr": 0.29376304196614883, "dir": {"0": 0.6995130999304429}, "genuine_rejections": 5046, "false_rejections": 1267, "false_acceptances": 117, "n_genuine_faces": 4313, "n_impostor_faces": 5588, "people_in_gallery": ["0013", "0005", "0029", "0011", "0025", "0027", "0002", "0006", "0018", "0012", "0004"]}
 SCENARIO: P2L_P2L_S4.1, THRESHOLD: 0.7
-{"far": 0.009282854022570076, "frr": 0.8702064896755162, "dir": {"0": 0.061946902654867256}, "genuine_rejections": 4803, "false_rejections": 3835, "false_acceptances": 51, "n_genuine_faces": 4407, "n_impostor_faces": 5494, "people_in_gallery": ["0014", "0029", "0023", "0026", "0006", "0010", "0007", "0001", "0018", "0016", "0012", "0004"]}
+{"far": 0.020937723693629205, "frr": 0.8073266867609552, "dir": {"0": 0.10920472988638999}, "genuine_rejections": 5046, "false_rejections": 3482, "false_acceptances": 117, "n_genuine_faces": 4313, "n_impostor_faces": 5588, "people_in_gallery": ["0013", "0005", "0029", "0011", "0025", "0027", "0002", "0006", "0018", "0012", "0004"]}
 SCENARIO: P2L_P2L_S4.1, THRESHOLD: 0.8
-{"far": 0.0, "frr": 0.9282958928976628, "dir": {"0": 0.0}, "genuine_rejections": 4815, "false_rejections": 4091, "false_acceptances": 0, "n_genuine_faces": 4407, "n_impostor_faces": 5494, "people_in_gallery": ["0014", "0029", "0023", "0026", "0006", "0010", "0007", "0001", "0018", "0016", "0012", "0004"]}
+{"far": 0.0, "frr": 0.9074889867841409, "dir": {"0": 0.0}, "genuine_rejections": 5050, "false_rejections": 3914, "false_acceptances": 0, "n_genuine_faces": 4313, "n_impostor_faces": 5588, "people_in_gallery": ["0013", "0005", "0029", "0011", "0025", "0027", "0002", "0006", "0018", "0012", "0004"]}
 SCENARIO: P2L_P2L_S4.1, THRESHOLD: 0.9
-{"far": 0.0, "frr": 0.9282958928976628, "dir": {"0": 0.0}, "genuine_rejections": 4815, "false_rejections": 4091, "false_acceptances": 0, "n_genuine_faces": 4407, "n_impostor_faces": 5494, "people_in_gallery": ["0014", "0029", "0023", "0026", "0006", "0010", "0007", "0001", "0018", "0016", "0012", "0004"]}
+{"far": 0.0, "frr": 0.9074889867841409, "dir": {"0": 0.0}, "genuine_rejections": 5050, "false_rejections": 3914, "false_acceptances": 0, "n_genuine_faces": 4313, "n_impostor_faces": 5588, "people_in_gallery": ["0013", "0005", "0029", "0011", "0025", "0027", "0002", "0006", "0018", "0012", "0004"]}
 SCENARIO: P2L_P2L_S4.2, THRESHOLD: 0.1
-{"far": 0.0, "frr": 0.0, "dir": {"0": 1.0}, "genuine_rejections": 731, "false_rejections": 0, "false_acceptances": 0, "n_genuine_faces": 889, "n_impostor_faces": 838, "people_in_gallery": ["0003", "0021"]}
+{"far": 1.0, "frr": 0.0, "dir": {"0": 1.0}, "genuine_rejections": 0, "false_rejections": 0, "false_acceptances": 402, "n_genuine_faces": 1253, "n_impostor_faces": 474, "people_in_gallery": ["0022", "0015", "0021"]}
 SCENARIO: P2L_P2L_S4.2, THRESHOLD: 0.2
-{"far": 0.0, "frr": 0.0, "dir": {"0": 1.0}, "genuine_rejections": 731, "false_rejections": 0, "false_acceptances": 0, "n_genuine_faces": 889, "n_impostor_faces": 838, "people_in_gallery": ["0003", "0021"]}
+{"far": 0.0, "frr": 0.041500399042298484, "dir": {"0": 0.9584996009577015}, "genuine_rejections": 402, "false_rejections": 52, "false_acceptances": 0, "n_genuine_faces": 1253, "n_impostor_faces": 474, "people_in_gallery": ["0022", "0015", "0021"]}
 SCENARIO: P2L_P2L_S4.2, THRESHOLD: 0.3
-{"far": 0.0, "frr": 0.0, "dir": {"0": 1.0}, "genuine_rejections": 731, "false_rejections": 0, "false_acceptances": 0, "n_genuine_faces": 889, "n_impostor_faces": 838, "people_in_gallery": ["0003", "0021"]}
+{"far": 0.0, "frr": 0.041500399042298484, "dir": {"0": 0.9584996009577015}, "genuine_rejections": 402, "false_rejections": 52, "false_acceptances": 0, "n_genuine_faces": 1253, "n_impostor_faces": 474, "people_in_gallery": ["0022", "0015", "0021"]}
 SCENARIO: P2L_P2L_S4.2, THRESHOLD: 0.4
-{"far": 0.0, "frr": 0.0, "dir": {"0": 1.0}, "genuine_rejections": 731, "false_rejections": 0, "false_acceptances": 0, "n_genuine_faces": 889, "n_impostor_faces": 838, "people_in_gallery": ["0003", "0021"]}
+{"far": 0.0, "frr": 0.041500399042298484, "dir": {"0": 0.9584996009577015}, "genuine_rejections": 402, "false_rejections": 52, "false_acceptances": 0, "n_genuine_faces": 1253, "n_impostor_faces": 474, "people_in_gallery": ["0022", "0015", "0021"]}
 SCENARIO: P2L_P2L_S4.2, THRESHOLD: 0.5
-{"far": 0.0, "frr": 0.0, "dir": {"0": 1.0}, "genuine_rejections": 731, "false_rejections": 0, "false_acceptances": 0, "n_genuine_faces": 889, "n_impostor_faces": 838, "people_in_gallery": ["0003", "0021"]}
+{"far": 0.0, "frr": 0.041500399042298484, "dir": {"0": 0.9584996009577015}, "genuine_rejections": 402, "false_rejections": 52, "false_acceptances": 0, "n_genuine_faces": 1253, "n_impostor_faces": 474, "people_in_gallery": ["0022", "0015", "0021"]}
 SCENARIO: P2L_P2L_S4.2, THRESHOLD: 0.6
-{"far": 0.0, "frr": 0.4915635545556805, "dir": {"0": 0.45219347581552305}, "genuine_rejections": 731, "false_rejections": 437, "false_acceptances": 0, "n_genuine_faces": 889, "n_impostor_faces": 838, "people_in_gallery": ["0003", "0021"]}
+{"far": 0.0, "frr": 0.33280127693535516, "dir": {"0": 0.627294493216281}, "genuine_rejections": 402, "false_rejections": 417, "false_acceptances": 0, "n_genuine_faces": 1253, "n_impostor_faces": 474, "people_in_gallery": ["0022", "0015", "0021"]}
 SCENARIO: P2L_P2L_S4.2, THRESHOLD: 0.7
-{"far": 0.0, "frr": 0.8627671541057368, "dir": {"0": 0.0}, "genuine_rejections": 731, "false_rejections": 767, "false_acceptances": 0, "n_genuine_faces": 889, "n_impostor_faces": 838, "people_in_gallery": ["0003", "0021"]}
+{"far": 0.0, "frr": 0.8747007182761373, "dir": {"0": 0.0}, "genuine_rejections": 402, "false_rejections": 1096, "false_acceptances": 0, "n_genuine_faces": 1253, "n_impostor_faces": 474, "people_in_gallery": ["0022", "0015", "0021"]}
 SCENARIO: P2L_P2L_S4.2, THRESHOLD: 0.8
-{"far": 0.0, "frr": 0.8627671541057368, "dir": {"0": 0.0}, "genuine_rejections": 731, "false_rejections": 767, "false_acceptances": 0, "n_genuine_faces": 889, "n_impostor_faces": 838, "people_in_gallery": ["0003", "0021"]}
+{"far": 0.0, "frr": 0.8747007182761373, "dir": {"0": 0.0}, "genuine_rejections": 402, "false_rejections": 1096, "false_acceptances": 0, "n_genuine_faces": 1253, "n_impostor_faces": 474, "people_in_gallery": ["0022", "0015", "0021"]}
 SCENARIO: P2L_P2L_S4.2, THRESHOLD: 0.9
-{"far": 0.0, "frr": 0.8627671541057368, "dir": {"0": 0.0}, "genuine_rejections": 731, "false_rejections": 767, "false_acceptances": 0, "n_genuine_faces": 889, "n_impostor_faces": 838, "people_in_gallery": ["0003", "0021"]}
+{"far": 0.0, "frr": 0.8747007182761373, "dir": {"0": 0.0}, "genuine_rejections": 402, "false_rejections": 1096, "false_acceptances": 0, "n_genuine_faces": 1253, "n_impostor_faces": 474, "people_in_gallery": ["0022", "0015", "0021"]}

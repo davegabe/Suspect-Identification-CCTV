@@ -54,7 +54,7 @@ class GUI(Process):
     Class to draw the GUI.
     """
 
-    def __init__(self, requests_queue: Queue, responses_queue: Queue, n_frames: int, all_frames: list[str]):
+    def __init__(self, requests_queue: Queue, responses_queue: Queue, n_frames: int, all_frames: list[str], gallery_sample: dict[str, np.ndarray]):
         super(GUI, self).__init__()
         # Create the queues
         self.requests_queue: Queue = requests_queue # using data as (frame, camera)
@@ -65,6 +65,7 @@ class GUI(Process):
         self.curr_frame: int = 0 # Current processed frame of the video
         self.n_frames: int = n_frames
         self.all_frames: list[str] = all_frames
+        self.gallery_sample: dict[str, np.ndarray] = gallery_sample
 
     def run(self):
         """
@@ -75,7 +76,7 @@ class GUI(Process):
         self.unknown_identities: list[Identity] = []
         # Frame of the video
         self.frame: np.ndarray = np.zeros((1, 1, 3), dtype=np.uint8)
-        # Create the figure
+        # Create two figures for the video and the gallery
         self.fig = plt.figure()
         self.fig.canvas.mpl_connect("key_press_event", self.on_press)
         # Create the subplots
@@ -172,30 +173,35 @@ class GUI(Process):
         self.suspects_ax.clear()
         # Disable the axis
         self.suspects_ax.axis("off")
-        # Get how many identities there are in the requested frame
-        identities_in_frame = [identity for identity in self.known_identities if f"{self.req_camera+1}_{self.all_frames[self.req_frame]}" in identity.frames]
-        n_identities = len(identities_in_frame)
-        if n_identities > 0:
-            # Create a new figure
-            fig = plt.figure()
-            # Create a grid of subplots to draw the photos of the identities
-            grid = ImageGrid(fig, 111, nrows_ncols=(1, n_identities), axes_pad=0.1)
-            # For each identity in the requested frame
-            for i, identity in enumerate(identities_in_frame):
-                # Get the name of the identity
-                name = identity.ranked_names[0]
-                # Get the photo of the identity
-                face = self.faces[name]
-                # Draw the photo of the identity
-                grid[i].imshow(face)
-                # Disable the axis
-                grid[i].axis("off")
-                # Draw the name of the identity
-                grid[i].text(0, 0, name, color="white", bbox=dict(facecolor="black", alpha=0.5))
-            # Show the figure in the subplot
-            fig.canvas.draw()
-            self.suspects_ax.imshow(fig.canvas.buffer_rgba())
-            fig.clear()
+        # Get the identities in the requested frame
+        identities_in_frame = [identity.ranked_names[0] for identity in self.known_identities if f"{self.req_camera+1}_{self.all_frames[self.req_frame]}" in identity.frames]
+        # Get how many identities there are in the gallery
+        n_identities = len(self.gallery_sample.keys())
+        # Create a new figure to put in the subplot
+        fig = plt.figure()
+        # Create a grid of subplots to draw the photos of the identities
+        grid = ImageGrid(fig, 111, nrows_ncols=(3, n_identities//3), axes_pad=0.1)
+        # For each identity in the requested frame
+        for i, (identity, face) in enumerate(self.gallery_sample.items()):
+            # Get the name of the identity
+            name = identity
+            # Get the photo of the identity
+            face = self.faces[name]
+            # Draw the photo of the identity
+            grid[i].imshow(face)
+            # Disable the axis
+            grid[i].axis("off")
+            # Make a green border around the photo of the identity if it's in the known identities
+            if name in identities_in_frame:
+                grid[i].set_facecolor("green")
+            else:
+                grid[i].set_facecolor("red")
+            # Draw the name of the identity
+            grid[i].text(0, 0, name, color="white", bbox=dict(facecolor="black", alpha=0.5))
+        # Show the figure in the subplot
+        fig.canvas.draw()
+        self.suspects_ax.imshow(fig.canvas.buffer_rgba())
+        plt.close(fig)
 
     def draw_slider(self):
         """

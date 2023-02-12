@@ -92,7 +92,8 @@ def main():
 
     # Build the gallery
     print("Building the gallery...")
-    gallery = build_gallery(os.path.join(f"{TEST_PATH}_faces", f"{TEST_SCENARIO}_C1"))
+    groundtruth_paths = [os.path.join("data/groundtruth/", f"{TEST_SCENARIO}_C{i+1}{TEST_SCENARIO2}.xml") for i in range(MAX_CAMERAS)]
+    gallery, gallery_sample = build_gallery(groundtruth_paths)
 
     # Initialize the identities
     unknown_identities: list[Identity] = [] # temporary identities which don't have a label yet
@@ -115,7 +116,7 @@ def main():
     # Launch the GUI on a separate thread
     all_frames_no_cameras = list(map(lambda x: x.split(".")[0], frames_reduced))
     if USE_GUI:
-        guip = GUI(requests_queue, responses_queue, len(frames_reduced), all_frames_no_cameras)
+        guip = GUI(requests_queue, responses_queue, len(frames_reduced), all_frames_no_cameras, gallery_sample)
         guip.start()
 
     for i, frame_name in enumerate(all_frames_no_cameras):
@@ -148,10 +149,10 @@ def evaluate_all():
     data_path = "data/"
 
     protocols = {
-    "P1E": ["S1", "S2", "S3", "S4"],
-    "P1L": ["S1", "S2", "S3", "S4"],
+    #"P1E": ["S1", "S2", "S3", "S4"],
+    #"P1L": ["S1", "S2", "S3", "S4"],
     "P2E": ["S1", "S2", "S3", "S4"],
-    "P2L": ["S1", "S2", "S3", "S4"],
+    #"P2L": ["S1", "S2", "S3", "S4"],
     }
 
     #thresholds = [0.1, 0.2, 0.225, 0.25, 0.275, 0.3, 0.4, 0.5]
@@ -176,7 +177,7 @@ def evaluate_all():
         groundtruth_paths = [os.path.join("data/groundtruth/", f"{scenario}_C{i+1}{suffix_scenario}.xml") for i in range(MAX_CAMERAS)]
         # Build the gallery
         print("Building the gallery...")
-        gallery = build_gallery(groundtruth_paths)
+        gallery, _ = build_gallery(groundtruth_paths)
         # For each threshold
         for threshold in thresholds:
             print(f"Environment: {environment}, Scenario: {scenario}, Threshold: {threshold}")
@@ -228,5 +229,5 @@ def evaluate_all():
         gc.collect()
 
 if __name__ == "__main__":
-    # main()
-    evaluate_all()
+    main()
+    #evaluate_all()

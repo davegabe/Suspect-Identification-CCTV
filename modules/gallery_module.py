@@ -10,12 +10,21 @@ from config import GALLERY_PATH, MAX_MISSING_FRAMES, NUM_BEST_FACES, NUMBER_OF_L
 def build_gallery(groundtruth_paths: list[str]) -> dict[str, list[np.ndarray]]:
     """
     Build a gallery from the other environment.
+
+    Args:
+        groundtruth_paths (list[str]): List of paths to the groundtruth files.
+
+    Returns:
+        dict[str, list[np.ndarray]]: The gallery.
+        dict[str, np.ndarray]: Sample image of the gallery.
     """
     folders = os.listdir(GALLERY_PATH)
     # Create a new gallery
     gallery: dict[str, list[np.ndarray]] = {}
     # Faces to add to the gallery
     people: set[str] = set()
+    # Sample image of the gallery
+    gallery_img: dict[str, np.ndarray] = {}
 
     for groundtruth_path in groundtruth_paths:
         tree = ET.parse(groundtruth_path)
@@ -46,9 +55,10 @@ def build_gallery(groundtruth_paths: list[str]) -> dict[str, list[np.ndarray]]:
             # Add the image to the gallery
             if id not in gallery:
                 gallery[id] = []
+                gallery_img[id] = cv2.resize(img, (600, 600))
             gallery[id].append(face_feature)
-    # Return the gallery
-    return gallery
+    # Return the gallery and the sample image
+    return gallery, gallery_img
 
 
 def check_identity(gallery: dict, faces: list[np.ndarray], threshold: float) -> list[str]:

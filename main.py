@@ -119,7 +119,7 @@ def main():
         guip.start()
 
     i = 0
-    for frame_name in tqdm(all_frames_no_cameras, desc=f"Processing frame {i+1}/{len(all_frames_no_cameras)}"):
+    for frame_name in tqdm(all_frames_no_cameras, desc="Processing frames"):
         handle_frame(all_camera_images[i], gallery, unknown_identities, known_identities, frame_name)
         if USE_GUI:
             handle_gui_communication(all_camera_images, unknown_identities, known_identities, requests_queue, responses_queue, i)

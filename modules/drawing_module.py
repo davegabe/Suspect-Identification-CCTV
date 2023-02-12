@@ -64,7 +64,7 @@ class GUI(Process):
         self.curr_frame: int = 0 # Current processed frame of the video
         self.n_frames: int = n_frames
         self.all_frames: list[str] = all_frames
-        self.gallery_sample: dict[str, np.ndarray] = gallery_sample
+        self.gallery_sample: dict[str, np.ndarray] = dict(sorted(gallery_sample.items()))
 
     def run(self):
         """

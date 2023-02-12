@@ -49,13 +49,26 @@ def build_gallery(groundtruth_paths: list[str]) -> dict[str, list[np.ndarray]]:
                 continue
             img = cv2.imread(os.path.join(GALLERY_PATH, folder, name))
             # Get features of the name
-            face_feature, bboxes, kps = get_face(img)
+            face_feature, bbox, kps = get_face(img)
             if face_feature is None:
                 continue
             # Add the image to the gallery
             if id not in gallery:
                 gallery[id] = []
-                gallery_img[id] = cv2.resize(img, (600, 600))
+                # Get the center of the face
+                x1 = int(bbox[0][0])
+                y1 = int(bbox[0][1])
+                x2 = int(bbox[0][2])
+                y2 = int(bbox[0][3])
+                top_center = (int((x1 + x2) / 2), y1)
+                # Take an image 1200x1200 pixels around the center of the face
+                x1 = max(0, top_center[0] - 600)
+                y1 = max(0, top_center[1] - 100)
+                x2 = min(img.shape[1], top_center[0] + 600)
+                y2 = min(img.shape[0], top_center[1] + 1100)
+                face = img[y1:y2, x1:x2]
+                # Resize the image to 600x600 pixels
+                gallery_img[id] = cv2.resize(cv2.cvtColor(face, cv2.COLOR_BGR2RGB), (600, 600))
             gallery[id].append(face_feature)
     # Return the gallery and the sample image
     return gallery, gallery_img

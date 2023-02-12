@@ -1,6 +1,5 @@
 import json
 from multiprocessing import Queue
-from pprint import pprint
 from time import time
 import os
 import cv2
@@ -119,11 +118,12 @@ def main():
         guip = GUI(requests_queue, responses_queue, len(frames_reduced), all_frames_no_cameras, gallery_sample)
         guip.start()
 
-    for i, frame_name in enumerate(all_frames_no_cameras):
-        print(f"Current frame: {frame_name}")
+    i = 0
+    for frame_name in tqdm(all_frames_no_cameras, desc=f"Processing frame {i+1}/{len(all_frames_no_cameras)}"):
         handle_frame(all_camera_images[i], gallery, unknown_identities, known_identities, frame_name)
         if USE_GUI:
             handle_gui_communication(all_camera_images, unknown_identities, known_identities, requests_queue, responses_queue, i)
+        i += 1
 
     # Force last decision
     unknown_identities, known_identities = decide_identities(unknown_identities, known_identities, gallery, GALLERY_THRESHOLD, force=True)

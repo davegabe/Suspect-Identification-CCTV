@@ -7,7 +7,6 @@ from multiprocessing import Process, Queue
 import cv2
 
 from modules.gallery_module import Identity
-from config import GALLERY_PATH
 
 
 def draw_files(identities: list[Identity], frames: list[str], paths: list[str]):
@@ -76,12 +75,11 @@ class GUI(Process):
         self.unknown_identities: list[Identity] = []
         # Frame of the video
         self.frame: np.ndarray = np.zeros((1, 1, 3), dtype=np.uint8)
-        # Create two figures for the video and the gallery
+        # Create the figure
         self.fig = plt.figure()
         self.fig.canvas.mpl_connect("key_press_event", self.on_press)
         # Create the subplots
         self.video_ax = self.fig.add_subplot(1, 2, 1)
-        self.suspects_ax = self.fig.add_subplot(1, 2, 2)
         self.slider_ax = self.fig.add_axes([0.1, 0.05, 0.8, 0.03])
         self.camera_buttons_ax = self.fig.add_axes([0.1, 0.1, 0.1, 0.1], facecolor="lightblue")
         # Interactive stuff
@@ -89,22 +87,14 @@ class GUI(Process):
         self.slider.on_changed(self.update_req_frame)
         self.camera_buttons = RadioButtons(self.camera_buttons_ax, ("Camera 1", "Camera 2", "Camera 3"))
         self.camera_buttons.on_clicked(self.update_req_camera)
-        # Pick faces from the gallery to show in the GUI
-        self.faces: dict[str, np.ndarray] = {}
-        face_images_folder = os.listdir(GALLERY_PATH)[0]
-        # For each name in the gallery
-        for name in os.listdir(os.path.join(GALLERY_PATH, face_images_folder)):
-            if not name.endswith(".JPG"):
-                continue
-            # Create a list of images
-            id = name.split(".")[0].split("ID")[1]
-            # For each image
-            image = cv2.imread(os.path.join(GALLERY_PATH, face_images_folder, name))
-            #SWAP CHANNELS
-            image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-            self.faces[id] = image
+        # Draw the gallery
+        self.draw_gallery_images_bar()
         # Launch the GUI
         self.draw_gui()
+        plt.title("Suspect Identification in CCTV Footage")
+        # Maximize the window and show the GUI
+        figManager = plt.get_current_fig_manager()
+        figManager.window.showMaximized()
         plt.show()
 
     def update_req_frame(self, val: int):
@@ -165,43 +155,22 @@ class GUI(Process):
         # Draw the requested frame of the video
         self.video_ax.imshow(self.frame)
 
-    def draw_suspect_images_bar(self):
+    def draw_gallery_images_bar(self):
         """
-        Draw a subplot with a photo of each known identity inside the requested frame and their name.
+        Draw a subplot with a photo of each identity in the gallery.
         """
-        # Clear the subplot
-        self.suspects_ax.clear()
-        # Disable the axis
-        self.suspects_ax.axis("off")
-        # Get the identities in the requested frame
-        identities_in_frame = [identity.ranked_names[0] for identity in self.known_identities if f"{self.req_camera+1}_{self.all_frames[self.req_frame]}" in identity.frames]
         # Get how many identities there are in the gallery
         n_identities = len(self.gallery_sample.keys())
-        # Create a new figure to put in the subplot
-        fig = plt.figure()
         # Create a grid of subplots to draw the photos of the identities
-        grid = ImageGrid(fig, 111, nrows_ncols=(3, n_identities//3), axes_pad=0.1)
+        grid = ImageGrid(self.fig, 122, nrows_ncols=(3, n_identities//3), axes_pad=0.1)
         # For each identity in the requested frame
         for i, (identity, face) in enumerate(self.gallery_sample.items()):
-            # Get the name of the identity
-            name = identity
-            # Get the photo of the identity
-            face = self.faces[name]
             # Draw the photo of the identity
             grid[i].imshow(face)
             # Disable the axis
             grid[i].axis("off")
-            # Make a green border around the photo of the identity if it's in the known identities
-            if name in identities_in_frame:
-                grid[i].set_facecolor("green")
-            else:
-                grid[i].set_facecolor("red")
-            # Draw the name of the identity
-            grid[i].text(0, 0, name, color="white", bbox=dict(facecolor="black", alpha=0.5))
-        # Show the figure in the subplot
-        fig.canvas.draw()
-        self.suspects_ax.imshow(fig.canvas.buffer_rgba())
-        plt.close(fig)
+            # Draw the name of the identity at the bottom center of the photo, with a white background
+            grid[i].text(0.5, 0.1, identity, ha="center", va="center", transform=grid[i].transAxes, bbox=dict(facecolor="white", alpha=0.5))
 
     def draw_slider(self):
         """
@@ -221,7 +190,7 @@ class GUI(Process):
         """
         Draw the GUI using subplots. The GUI will have 4 subplots:
         1. The video
-        2. The bar with the photos of the known identities
+        2. The bar with the photos of the gallery
         3. The slider to change the requested frame of the video
         4. Three toggle buttons, one for each camera
         """
@@ -229,8 +198,6 @@ class GUI(Process):
         self.ask_for_frame()
         # Draw the video
         self.draw_video()
-        # Draw the bar with the photos of the known identities
-        self.draw_suspect_images_bar()
         # Draw the slider
         self.draw_slider()
         # Draw three toggle buttons, one for each camera
